@@ -1,0 +1,237 @@
+\chapter{Deep Learning Methods for High-Throughput Pennycress Seedpod Phenotyping} \label{pennycress-unet}
+
+\section{Introduction}
+
+Pennycress (\textit{Thlaspi arvense L.}) is a winter annual crop belonging to the \textit{Brassicaceae} (mustard) family; it is similar to canola, rapeseed, and camelina due to its seed-oil composition and content \cite{moser2009production}. Although it is generally considered a pest (weed), pennycress’s amenability to genetic modification and commercialization prospects have caused scientists to consider it as a possible seed-oil based bioenergy feedstock. Additionally, pennycress has shown potential as a cover crop that can be grown in between corn-soy rotations during fallow periods due to its life cycle characteristics \cite{moser2009production}.
+
+To realize this potential as a bioenergy crop, it is necessary to assess the standing genetic variation for feedstock-critical traits across natural accessions of pennycress. Plant phenotyping, the process of measuring and characterizing expressed traits such as plant height, seed yield, and flowering time, is a crucial starting point for these studies. Measuring phenotypes on a population scale allows scientists to make conclusions about environmental and climatic influence on these traits and understand their genetic architecture.
+
+However, intensive phenotyping, the measurement of many traits from a single sample, is widely considered to be a bottleneck in plant research \cite{wang2019high}. In crop system systems such as pennycress, seed pod phenotypes are considered too tedious and time-consuming to collect by hand, meaning that valuable information is systematically ignored \cite{pod_shattering, seed-cnn}.
+
+
+Image-based phenotyping is a new frontier in plant biology that allows researchers to extract information about plant species that would be impossible to measure by hand \cite{lagergren2023fewshot}. The process involves a combination of physical tools, software, and domain expertise to obtain phenotypic information. Unlike manual phenotyping, which requires different methods to extract various phenotypes, image-based phenotyping methods can be applied at any scale, ranging from microscopic cell images to satellite imagery \cite{lagergren2023fewshot}. Furthermore, image-based methods can extract complex topological and morphological features from these domains, allowing researchers to garner even more information than manual phenotyping would provide \cite{lagergren2023fewshot}. To extract such features, many image-based methods aim to distinguish biological structures in the foreground of an image from the background. Although it is possible to perform this task by physically changing the lighting scheme when capturing images and using traditional segmentation techniques like thresholding, recent work has utilized artificial intelligence methods to accomplish this goal using the raw image data directly.
+
+Deep learning models have gained popularity in recent years due to their state-of-the-art performance in computer vision and image classification tasks \cite{ImageNet, unet}. Such models are capable of learning highly complex non-linear functions and extracting features imperceptible to humans, leading to superhuman performance across many domains \cite{redd2022image}. In plant phenotyping, deep learning models such as convolutional neural networks (CNNs) can extract features from a variety of image types and settings, allowing researchers to quickly and effectively phenotype different species.
+
+Despite the progress made using image-based phenotyping for other plant species, an automated, high-throughput framework for pennycress seed pod phenotyping has not yet been developed. Such a pipeline would allow scientists to overcome the manual collection bottleneck, making larger scale studies possible. Furthermore, with intensive phenotyping enabled, scientists could analyze the effects of experimental treatments or conditions on seed pod traits. Such a pipeline would also enable extensive phenotyping, the measurement of traits from many samples, due to its scalable structure.
+
+Additionally, a high-throughput phenotyping pipeline would allow scientists to discover novel connections between traits by measuring all parts of the seed pod instead of just seeds. For example, \cite{wing-seed-assoc} found that pod size can regulate seed growth in members of the Brassicacae family; this hypothesis can be tested within pennycress using a population-scale study. Using such a framework in conjunction with genome-wide association studies (GWAS) would allow researchers to pinpoint the underlying genetic drivers of these intensively phenotyped traits \cite{uffelmann2021genome}.
+
+In this work, we present an automated deep learning pipeline for pennycress seed pod phenotyping. We implemented U-Net, a state-of-the-art deep learning model, to semantically segment wing, envelope, and seed pixels in pennycress seed pod images, and we developed a novel loss function to account for uncertainty in hand-annotated ground truth labels. We created an open-source ground truth dataset of 365 hand-annotated label images to use as training and validation data. Our model achieved over 96\% accuracy for wing segmentation, 95\% accuracy for envelope segmentation, and almost 80\% accuracy for seed segmentation. After training, our team validated the model by performing a population-scale study on over 11,000 seed pods from 771 unique genotypes. We extracted over 50 biologically relevant phenotypes from each seed pod and examined relationships between these traits across genotypes. The code and data are available on our \href{https://github.com/pikruse/pennycress-segmentation}{project github}.
+
+\section{Methods}
+
+\subsection{Dataset}
+
+\subsubsection{Data Collection}
+
+Our raw data consisted of 661 scanned images of Pennycress (Thlaspi arvense L.) seed pods collected from a variety of plantations in the midwest, including those at Western Illinois University (WIU), Illinois State University (ISU), and University of Minnesota (UM). After collecting seed pods, we imaged them using an Epson V39 Perfection scanner. Each scanned image contains multiple seed pods due to their size. Figure \ref{pennycress_original} displays an example raw image scan.
+
+\begin{figure}[!ht]
+    \center
+    \includegraphics[width=0.75\linewidth]{figures/pennycress-unet/pennycress_raw_scans.png}
+    \caption{Raw Pennycress Leaf Image} \label{pennycress_original} 
+\end{figure}
+
+\subsubsection{Data Annotation}\label{hand_annotation}
+
+To train the U-Net in a supervised manner, we created pixel-level annotated label data. We used GNU Image Manipulation Program (GIMP) to annotate sample data. We labeled three areas of each Pennycress seed pod: the wing was annotated with red pixels, the envelope was annotated with green pixels, and the seeds were annotated with blue pixels. We annotated these areas due to the biological significance of their phenotypes. Figure \ref{pennycress_split} shows an example of a separated Pennycress seed pod and its associated segmentation. We segmented 365 individual pods; we used 281 seed pods for training and validation and the remaining 64 for testing.
+
+\begin{figure*}[t!]
+    \centering
+    \begin{subfigure}[t]{0.4\textwidth}
+        \centering
+        \includegraphics[height=3in]{figures/pennycress-unet/pennycress_single_leaf.png}
+        \caption{Separated Pennycress Leaf Image}
+    \end{subfigure}
+    ~
+    \begin{subfigure}[t]{0.4\textwidth}
+        \centering
+        \includegraphics[height=3in]{figures/pennycress-unet/pennycress_annotated_leaf.png}
+        \caption{Annotated Pennycress Leaf Image}
+    \end{subfigure}
+    \caption{Separated and Annotated \textit{T. arvense} Images}  \label{pennycress_split} 
+\end{figure*}
+\subsubsection{Data Preprocessing}
+
+We implemented two preprocessing steps required before model input. First, we separated each pennycress seed pod in the raw image. We created rectangular bounding boxes around each leaf object in python, and we saved each bounding box as a separate image. We used these separated images for model input.
+
+After separation, we padded each image with 128 pixels in all directions. Image padding enables us to generate tiles near the edge of images, allowing the model to see a greater context. We explain the tile generation process further in Section \ref{tile_gen}. The red box in the leftmost image in Figure \ref{pennycress_preproc} highlights the padding boundary.
+
+\begin{figure}[!ht]
+    \center
+    \includegraphics[width=\linewidth]{figures/pennycress-unet/pennycress_preprocessed_images.png}
+    \caption{Preprocessed Pennycress Images}\label{pennycress_preproc}
+\end{figure}
+
+\subsection{Tile Generation} \label{tile_gen}
+
+We implemented a tile generation scheme to increase the amount of training data available and build an invariance to common imperfections that occur during the image collection process. First, we selected a window size of 128, meaning that the height and width of each tile was 128 $\times$ 128. Pixels on the seed pod were randomly initialized as a central pixel for our tiles. After the algorithm selected central pixels, it used the surrounding 128 $\times$ 128 pixels to create a tile. 
+
+During validation, we left tiles unchanged to prompt the most accurate predictions possible. However, during training, we applied various image augmentations and transformations to build an invariance to common data collection issues. We applied rotation, blur, saturation, brightness, flips, and transposes with a 50\% chance of occurrence each, greatly increasing the number of unique types of tiles that could be generated. 
+
+
+We selected each type of transformation to combat certain issues that occur during the scanning process. For example, blur transformations simulate potential smudges on the scanner screen. Rotations model the differences in angle between scanned leaves, and brightness transformations capture the potential for shadows underneath folds in an image. By using these transformations to simulate real imaging issues, the model learns to become invariant to such features and instead focus on biologically relevant information. Therefore, the purpose of the tile generation scheme is twofold: not only does it increase the amount of available training data, but it also builds an invariance to common scanning issues. We show examples of generated training tiles and their corresponding labels in Figure \ref{tile_gen_ex}.
+
+
+\begin{figure}[!ht]
+    \center
+    \includegraphics[width=\linewidth]{figures/pennycress-unet/tile_gen.png}
+    \caption{Generated Image Tiles}\label{tile_gen_ex}
+\end{figure}
+
+\subsection{U-Net}
+
+U-Net is a fully convolutional neural network architecture which provides state-of-the-art image segmentation performance across multiple domains. The model includes a contractive path to capture hierarchical and contextual features followed by a symmetric expansive path to provide specific localizations within the image \cite{unet}. We used a U-Net with similar architecture to \cite{unet} but modified the block structure, activation function, and various hyperparameters to improve domain-specific performance.
+
+Since raw leaf images were too large and computationally expensive to fit into model memory while training, we used the generated leaf tiles created in Section \ref{tile_gen} for training.
+
+The model's input is a 3-channel RGB tile of size 128 $\times$ 128, and its output is also 128 $\times$ 128 with four channels corresponding to background, wing, envelope, and seed classes. We applied a softmax activation function to create a pixel-wise segmentation map, where the model gives each pixel a class label. We then compared segmentation maps to the corresponding hand-made segmentations detailed in Section \ref{hand_annotation} and minimized the weighted cross-entropy loss between them to train the model.
+
+The main component in the U-net architecture is a convolutional block. Each block contains one convolutional layer with a 3 $\times$ 3 kernel followed by a batch normalization, SeLU activation, and dropout layer with a rate of 0.1.
+
+The U-net contains seven convolutional blocks of varying sizes. The model has an identical symmetric architecture. The layer in the first block of the model contains a feature map of size 128 $\times$ 128; the layer has 32 kernels, extracting one feature for each kernel. The first four blocks in the U-net model comprise the contractive steps; 2 $\times$ 2 max-pooling layers are used between blocks to halve the size of the feature maps, while the number of kernels in each layer is doubled. This process is repeated four times, ending the contractive step with a 16 $\times$ 16 feature map layer containing 128 kernels. The final block in the contractive step is not followed by a max-pooling operation; it is referred to as the bottleneck layer due to its low resolution and dense feature space. 
+
+The next three blocks in the network make up the expansive step. a 2 $\times$ 2 up-convolution layer doubles the feature map size before each block, while the number of kernels in each block decreases by a factor of two. These blocks are stacked until an output layer with a feature map of size 128 $\times$ 128 and 16 kernels each is produced. We apply a final convolutional layer with one kernel to the output to create a map of size 128 $\times$ 128 $\times$ 4, with each of the four channels representing a segmentation class. Additionally, we use skip connections to concatenate corresponding contractive and expansive layers. Not only do these connections prevent gradient vanishing, but they also leverage information from multiple levels of features in the image, allowing for state-of-the-art segmentation performance. We visualize the model's architecture in Figure \ref{pennycressunet}. 
+
+
+\begin{figure}[!ht]
+    \center
+    \includegraphics[width=\linewidth]{figures/pennycress-unet/PennycressUNet3.png}
+    \caption{Pennycress U-Net architecture}
+    \label{pennycressunet}
+\end{figure}
+
+\subsection{Edge-Weighted Cross Entropy Loss}
+
+To account for uncertainty in the exact boundaries of our ground-truth labels, we implemented a loss function which fractionally weights loss values for pixels closer to the boundary between leaf envelope and seed.
+
+We first calculate a raw weight map of distance from seeds by binarizing the seed channel in the image, eroding it and multiplying it by the original image. We then calculate the euclidean distance from each pixel to the closest border pixel to produce a distance map. We introduce a border weighting parameter $b$ to only weight regions within a certain distance of the border. All pixels exceeding this distance are coerced to a value of $b$ as well. Finally, we normalize the weight map between 0 and 1, and we multiply this normalized map by our weight value $w$ < 1.
+
+After calculating the raw weight map, we min-max normalize it so that pixel values $W_{i,j} \in [0, 1]$. We then invert the weight map so that pixels with a smaller distance to the boundary have a lower weight value. Finally, we scale the weight map so that its range is $W_{i,j} \in [w, 1]$. We then multiply the weight map pixelwise with cross-entropy loss: 
+
+\begin{comment}
+To calculate the distances between each pixel and their nearest neighbors from, we adopt the boundary weighting process from \cite{unet}:
+
+\begin{align}\label{distancemapcalc}
+W = \exp\bigg(-\frac{1}{2}\bigg(\frac{d_1 + d_2}{b}\bigg)^2\bigg).
+\end{align}
+\end{comment}
+
+\begin{align}\label{wce}
+    L_{WCE}(t, p(\theta)) = - \sum_{j}^{J} \sum_{i}^{I} \sum_{k}^{K} W_{i,j} (t_{i,j,k} \log(p(\theta)_{i,j,k})),
+\end{align}
+
+\noindent where $t$ is the ground truth segmentation map and $p(\theta)$ is the predicted segmentation map as a function of U-Net parameters. The objective function of the network is to find weights such that the loss is minimized:
+
+\begin{align}
+    \hat{\theta} = \text{argmin}_{\theta} \text{L}(t, p(\theta)).
+\end{align}
+
+
+\subsection{Model Training}
+
+To prevent the model from overfitting, which is a common problem in biological image datasets, we trained it on iterations instead of full epochs. Instead of training on the entire dataset for each epoch, we selected 1000 batches of data and performed backpropagation on these batches. As such, we prevented the model from learning the training examples too well, and the U-Net's training time and computational requirements were lowered. Training the model for 150,000 batches provided the best results at evaluation time. We used an early stopping parameter of 50 iterations, that is, if the model's best total validation loss value did not improve for 50 iterations, the model stopped training.
+
+Additionally, we implemented a learning rate with warmup and cosine decay. We raised the learning rate from 0 to $1e^{-3}$ over 10,000 iterations to promote gradient stabilization; from this maximum learning rate, we used a cosine decay function to reduce the learning rate to $1e^{-5}$ over 90,000 iterations.
+
+\subsection{Feature Extraction}\label{feature_ex}
+
+We developed functions to extract 51 features from each seed pod segmentation map. Features belonged to one of three categories: absolute, ratio, or color.
+
+\subsubsection{Absolute Features}
+
+We calculated seven absolute features from each segmentation map: wing area and perimeter, envelope area and perimeter, seed area and perimeter, and seed count. Areas for each tissue were calculated by taking the sum of all pixels belonging to each class, and perimeters were calculated using the Scikit-Image Python package \cite{scikit-image}. To convert these measurements into $cm^2$, we divided them by the squared dots per inch (DPI) of the image, which was 600, and multiplied by a conversion factor of 6.4516 $cm^2/in$.
+
+In addition to measuring area and perimeter features, we utilized the watershed algorithm to count the number of seeds in each segmented image. First, we separated the seed channel from the rest of the segmentation map to create a binarized seed mask. Then, we calculated the Euclidean distance from each seed pixel to the closest non-seed pixel. We applied a threshold to this distance map, setting any pixel that was less than 60\% of the maximum distance value in the map to 0. This process produced a watershed map, and we used the OpenCV Python package \cite{opencv_library} to label all unique components of the image, returning a seed count. The watershed process is visualized in Figure \ref{watershedding}.
+
+\begin{figure}[!ht]
+    \center
+    \includegraphics[width=\linewidth]{figures/pennycress-unet/watershedding.png}
+    \caption{Watershed Segmentation of Pennycress Seeds}
+    \label{watershedding}
+\end{figure}
+
+\subsubsection{Ratio Features}
+
+We calculated 12 ratio features from the segmented seed pod masks, including six area and perimeter-based features each. First, we calculated the ratio of each tissue’s area to the total segmentation area, which we found by summing existing wing, envelope, and seed pixels. We then divided the sum of each tissue’s surface pixels by the total number of pixels to achieve three ratios: wing-to-total area, envelope-to-total area, and seed-to-total area.
+
+After calculating ratios based on total areas, we calculated ratios of areas between each surface. Using the sums of pixels for each tissue’s areas, we calculated the seed-to-envelope, envelope-to-wing, and seed-to-wing ratios by dividing the first tissue measurements by the second.
+
+We used a similar process to calculate perimeter-based ratios. First, we calculated the ratio of each tissue to the total perimeter using the same method described for area ratio calculation. Additionally, three perimeter ratios between tissues were calculated: seed-to-envelope, envelope-to-wing, and seed-to-wing.
+
+\subsubsection{Color Features}
+
+We extracted nine color-based features from each tissue class for seed pod input images: red, green, blue (rgb); hue, saturation, brightness (hsv); and lightness, red-green, and blue-yellow (laB). First, we used the OpenCV Python package \cite{opencv_library} to extract the rgb, hsv, and laB color spaces from each input image. We then created a tensor of these features with size height x width x 9. We used the segmentation masks produced by the model to subset this tensor by surface; we divided the feature tensor into three sub-tensors which only included wing, envelope, and seed color features separately.
+
+After separating our color features by surface, we aggregated each feature across its spatial dimensions, taking the mean for all nine features and all three surfaces. This process produced three nine-dimensional vectors consisting of the color variables for each surface, yielding 27 features in total.
+
+\section{Results}
+
+\subsection{Evaluation Metrics}
+
+Jaccard Index, also known as intersection over union, was used to evaluate the accuracy of model predictions. Given a ground truth pixel-wise segmentation set \textit{A} and a predicted pixel-wise segmentation set \textit{B}, the Jaccard Index is computed with
+
+\begin{align}\label{iou}
+    J(A,B) &= \frac{|A \cap B|}{|A \cup B|}.
+\end{align}
+
+The metric has a range between 0 and 1, with a value of 1 indicating perfectly similar segmentations, while a value of 0 indicates completely dissimilar segmentations.
+
+\subsection{U-Net Results}
+
+\begin{table}
+\begin{center}
+\begin{tabular}{||c | c | c | c||}
+ \hline
+\textbf{Tissue} & \textbf{Vanilla U-Net} & \textbf{Boundary Down-Weighted Loss} & \textbf{Boundary Up-Weighted Loss}\\ [2ex] 
+ \hline\hline
+ \textit{Wing} & 95.91\% & \textbf{96.11\%} & 95.89\% \\ [2ex]
+ \hline
+\textit{Envelope} & 94.68\% & \textbf{95.00\%} & 94.93\% \\ [2ex]
+ \hline
+ \textit{Seed} & 78.35\% & 78.32 \% & \textbf{78.63\%} \\ [2ex]
+ \hline
+\end{tabular}
+\caption{U-Net Segmentation Results}\label{results_table}
+\end{center}
+\end{table}
+
+We evaluated the U-Net's segmentation performance on 5 raw images containing 61 seed pods in total. The results are displayed in Table \ref{results_table}. The model with boundary-weighted loss achieved a Jaccard index score of approximately 96\% for wing segmentation and exactly 95\% for envelope segmentation. However, the model achieved a lower similarity score of 78.32\% for seed segmentation. Compared to the vanilla U-Net, the boundary-weighted loss function yields slightly higher wing and envelope segmentation similarities, but its seed segmentation score is fractionally lower. There are few visual errors in the predicted segmentation outputs, which we see in Figure \ref{segmentations}. We found no prior work measuring semantic segmentation of pennycress to compare with our model.
+
+\begin{figure}[!ht]
+    \center
+    \includegraphics[width=\linewidth]{figures/pennycress-unet/full-image-prediction.png}
+    \caption{U-Net Prediction on a single Pennycress Image}
+    \label{segmentations}
+\end{figure}
+
+\subsection{Population-Scale Results}
+
+We performed a population-scale study by extracting phenotypes from over 11,000 seed pods across 771 genotypes. Each image contained approximately 15 seed pods and took around 2 minutes to segment with the model. Images took approximately 1.5 hours to segment by hand, meaning that model inference was 30 times faster than hand segmentation.
+
+We used the feature extraction methods described in Section \ref{feature_ex} to create an open-source dataset of 51 phenotypes for all 11,000 seed pods. In Figure \ref{area_dist}, we examine the distributions of three key phenotypes: wing area, envelope area, and seed area. These traits were examined due to their direct relationship to model performance. Each trait was log-normally distributed, but their mean and variance were different. The log-normal distribution of these traits indicates that our U-Net model accurately captured their biological underpinnings, as plant traits typically fall into a log-normal distribution \cite{TRY}.
+
+Additionally, we examined correlations between wing area and seed area and count. The review in \cite{wing-seed-assoc} hypothesizes that larger pods in Brassicaceae correlate positively with the rate of seed filling. Our results corroborate this finding, as wing area was positively correlated with seed area and seed count, with Spearman correlations $r = .51$ and $r = .30$ respectively. Correlation plots are displayed in figure \ref{wing_seed_corr}.
+
+\begin{figure}[!ht]
+    \center
+    \includegraphics[width=\linewidth]{figures/pennycress-unet/area-distributions.png}
+    \caption{Distribution of Areas by Seed Pod Tissue}
+    \label{area_dist}
+\end{figure}
+
+\begin{figure}[!ht]
+    \center
+    \includegraphics[width=\linewidth]{figures/pennycress-unet/wing-area-v-seed-area-count.png}
+    \caption{Wing Area vs. Seed Area and Count}
+    \label{wing_seed_corr}
+\end{figure}
+
+\section{Discussion}
+Our team developed a U-Net model for high-throughput segmentation of pennycress seed pods, and we created an open-source, hand annotated ground truth dataset of 365 seed pod images to use for training data. We performed a population-scale study with the model, extracting over 50 phenotypes from 11,000 seed pods belonging to 761 naturally occurring accessions of pennycress. The U-Net produced over 95\% accurate wing and envelope segmentations and almost 80\% accurate seed segmentations. Additionally, model inference provided a 30x speed increase over manual hand-segmentation.
+
+Despite this progress, our work has some limitations. Collecting and scanning seed pods to use for segmentation is still a labor-intensive process; this could become a bottleneck in future population-scale studies. Additionally, the model’s performance is dependent on the quality of label data due to its supervised nature. Accurately annotating seed border pixels was difficult due to the low brightness and contrast levels in image scans, and this limitation was reflected in the lower accuracy for seeds than other surfaces. Therefore, it is important to find methods to improve image quality in future work, possibly utilizing higher-resolution scanners.
+
+This work has several implications for future pennycress research. We found no prior work that extracts intensive phenotypes from pennycress seed pods due to the labor-intensive nature of this task. Therefore, this article provides a novel pipeline for extracting several biologically important phenotypes at the population-scale for pennycress. The framework allows scientists to perform experiments on pennycress that were previously impossible; for example, researchers can examine how treatments and experimental conditions affect entire populations by measuring seed pod phenotypes across treatment groups. Furthermore, scientists can test hypotheses about phenotypic relationships on a broad scale, leading to higher-impact research. Additionally, the pipeline can be used in conjunction with GWAS to pinpoint the underlying genetic drivers of traits. Scientists can find relationships between genome regions and phenotypes collected from the pipeline, providing a path for new genetic modification studies in the future. Overall, the pipeline presented in this paper provides several avenues for the advancement of pennycress as a seed-oil based biofuel feedstock.
+
