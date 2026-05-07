@@ -1,6 +1,4 @@
-\begin{abstract}
-Genomic prediction is an important task in the field of plant biology, enabling breeders to identify lines with desirable traits under diverse environmental conditions. Although accurate prediction of maize yield is crucial for global food security, it remains challenging due to complex genotype-by-environment interactions. In this work, we present a novel multi-input deep learning architecture for maize prediction that encodes global allelic relationships, local linkage disequilibrium (LD), and environmental covariates through transformer, convolutional, and fully-connected (FC) blocks, respectively. We use a mixture-of-experts (MoE) style gating architecture to weigh the importance of each block before combining the individual encoder outputs in the transformer block explicitly capturing G $\times$ E interactions. Training on the publicly available Genomes2Fields (G2F) G$\times$E prediction competition dataset comprising 21 environments over 10 years, we achieve a Pearson correlation coefficient (PCC) of $0.495$ in the 2024 test set, outperforming the competition-winning PCC of $0.45$. Our code is openly available\footnote{\url{https://github.com/Jacobson-CompSysBio/GP-Transformer}}, facilitating reproducibility and future extensions.
-\end{abstract}
+\chapter{G $\times$ E Transformer}\label{ch:gxe}
 
 %%% INTRODUCTION
 \section{Introduction}
@@ -241,8 +239,5 @@ The competition's evaluation metric is the average PCC between predicted and obs
 
 %%% DISCUSSION
 \section{Discussion}
-
-
-\printbibliography
 
 

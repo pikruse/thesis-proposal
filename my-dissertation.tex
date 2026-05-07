@@ -19,7 +19,7 @@
 %\documentclass[thesis,monochrome,twoside,letterpaper,12pt]{utthesis} % thesis, two side, monochrome text
 % for a dissertation, replace the thesis option by dissertation:
 % \documentclass[dissertation,letterpaper,12pt]{utthesis} . . .
-\renewcommand{\baselinestretch}{1.5} 	 % line Spacing
+\renewcommand{\baselinestretch}{1.5} % line Spacing
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % TO DO: FILL IN YOUR INFORMATION BELOW - READ THIS SECTION CAREFULLY
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -74,7 +74,7 @@
 \usepackage{lineno}
 \usepackage{subfigure}
 
-\newcommand{\todocite}[1]{\textcolor{red}}{[#1]}
+\newcommand{\todocite}[1]{\textcolor{red}{[#1]}}
 
 % add a proposal title page edit
 \makeatletter
@@ -120,18 +120,7 @@
     \pagenumbering{roman}
     \setcounter{page}{2}
     %
-    \makeCopyrightPage % make the copyright page
-    %
-    \addToPDFBookmarks{1}{Dedication}{b} % add a pdf bookmark to the dedication page
-    %
-    \addToPDFBookmarks{1}{Acknowledgements}{c} % add a pdf bookmark to the acknowledgements page
-    \include{front-matter/acknowledgements} % include the acknowledgements
-    %
-    \addToPDFBookmarks{1}{Quote}{d} % add a pdf bookmark to the quotation page
-    \include{front-matter/quote} % include a quote
-    %
-    \addToPDFBookmarks{1}{Abstract}{e} % add a pdf bookmark to the abstract page
-    \include{front-matter/abstract} % your abstract
+    \makeCopyrightPage % make the copyright page 
     %
     \addToPDFBookmarks{0}{Table of Contents}{f}
     \tableofcontents % generate a table of contents
@@ -152,12 +141,11 @@
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % INCLUDE THE CHAPTERS STARTING WITH THE NOMENCLATURE IF PRESENT
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    \include{front-matter/nomenclature} % OPTIONAL
+    \include{front-matter/abstract}
     \include{chapters/chapter-1}
     \include{chapters/chapter-2}
     \include{chapters/chapter-3}
     \include{chapters/chapter-4}
-    \include{chapters/chapter-5}
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % BIBLIOGRAPHY
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
