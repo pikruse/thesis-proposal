@@ -103,7 +103,6 @@
 \def\@committeeMemberB {Committee member B}	% second committee member
 \def\@committeeMemberC {Committee member C}	% ... you get the trend!
 \def\@committeeMemberD {Committee member D}	%
-\def\@committeeMemberE {Committee member E}	%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % 	LOAD PACKAGES
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -1,12 +1,248 @@
-\chapter{Multiplex Graph Q-Former: A Multimodal Deep Learning Model for Biological Question Answering} \label{mp-gqf}
+\begin{abstract}
+Genomic prediction is an important task in the field of plant biology, enabling breeders to identify lines with desirable traits under diverse environmental conditions. Although accurate prediction of maize yield is crucial for global food security, it remains challenging due to complex genotype-by-environment interactions. In this work, we present a novel multi-input deep learning architecture for maize prediction that encodes global allelic relationships, local linkage disequilibrium (LD), and environmental covariates through transformer, convolutional, and fully-connected (FC) blocks, respectively. We use a mixture-of-experts (MoE) style gating architecture to weigh the importance of each block before combining the individual encoder outputs in the transformer block explicitly capturing G $\times$ E interactions. Training on the publicly available Genomes2Fields (G2F) G$\times$E prediction competition dataset comprising 21 environments over 10 years, we achieve a Pearson correlation coefficient (PCC) of $0.495$ in the 2024 test set, outperforming the competition-winning PCC of $0.45$. Our code is openly available\footnote{\url{https://github.com/Jacobson-CompSysBio/GP-Transformer}}, facilitating reproducibility and future extensions.
+\end{abstract}
 
+%%% INTRODUCTION
 \section{Introduction}
+Genotype-by-environment (G $\times$ E) interactions are a key mechanism underlying crop stability and performance \comment{[CITE]}. In turn, accurately modeling these interactions has important practical implications, including increased food security, development of alternate fuel sources, and optimized farming practices \comment{[CITE HERE]}. However, due to to the amount of heterogeneous data required to model interactions, G $\times$ E prediction is a task that requires a diversity of knowledge, including genetics, agronomy, statistics, and computer science.
 
-\section{Data}
+Early genomic prediction approaches relied on small, single-environment datasets and statistical models that primarily captured additive effects, such as genomic best linear unbiased prediction (GBLUP) and Bayesian linear mixed models. While effective for narrow settings, these methods struggle to scale to heterogeneous data and capture non-linear interactions among loci and environments.
 
+An increase in publicly available data has brought both renewed focus and challenge to GxE prediction. The Genomes to Fields (G2F) Maize G $\times$ E prediction challenge formalized this focus by curating a public dataset of genotypes and environments, containing over 150,000 observations across 10 years and hundreds of field sites \cite{g2f-maize-2025}.  
+
+Deep learning models are well-suited for genomic prediction because they can capture dependencies on the local and global level across a heterogeneity of data sources. Due to the expansion of publicly available data along with innovations in consumer graphics processing units, it is becoming increasingly more feasible to apply deep learning to G $\times$ E prediction
+\comment{add comment about previous deep learning projects}
+
+In this work, we developed a deep learning model, trained on the g2f maize prediction dataset, to predict maize grain yield. We used a multi-input structure to model the interaction between linkage disequilibrium, global genotype, and environmental covariates.
+
+%%% RELATED WORK
+\section{Background and Related Work}
+\subsection{G2F Maize Competition}
+\begin{itemize}
+    \item G2F Paper \cite{g2f-maize-2025}: Introduces the G $\times$ E prediction competition, where contestants predicted the absolute grain yield for maize hybrids on an open source dataset. The competition garnered a variety of contestants from various backgrounds and countries, and a variety of methods were used in the competition.
+
+    \item \href{https://www.nature.com/articles/s41467-023-42687-4}{Leveraging data from the Genomes-to-Fields Initiative to investigate genotype-by-environment interactions in maize in North America}: Curates, cleans, and expands data from the G2F dataset.
+    
+    \item \href{https://acsess.onlinelibrary.wiley.com/doi/10.1002/tpg2.70050}{Multi-trait/environment sparse genomic prediction using the SFSI R-package}: Authors introduce a framework for sparse genomic prediction across multiple traits and environments. The model unifies sparse selection indices and sparse genomic prediction to solve sparse prediction problems. 
+    
+    \item \href{https://www.biorxiv.org/content/10.1101/2024.02.08.579534v1}{Using machine learning to integrate genetic and environmental data to model genotype-by-environment interactions}:
+
+    \item \href{https://www.nature.com/articles/s41592-024-02523-z}{Nucleotide Transformer} \cite{nucleotide-transformer}
+
+    \item \href{https://icml-compbio.github.io/icml-website-2022/2022/papers/WCBICML2022_paper_58.pdf}{SNVFormer} \cite{snvformer}
+
+    \item \href{https://academic.oup.com/bib/article/25/1/bbad438/7459582}{TF-Based Prediction with a knowledge module} \cite{wu2023transformer}
+
+    \item \href{https://academic.oup.com/bioinformatics/article/37/15/2112/6128680}{DNABERT} \cite{dnabert}
+
+    \item \href{https://arxiv.org/pdf/2306.15006}{DNABERT-2} \cite{dnabert2}
+
+    \item \href{https://arxiv.org/pdf/2403.03234}{Caduceus} \cite{caduceus}
+\end{itemize}
+
+
+
+%%% METHODS
 \section{Methods}
+\subsection{Data}
+Data for this model were obtained through the Genomes2Fields (G2F) Maize Prediction Competition \cite{g2f-maize-2025}. The dataset included trait, metadata, soil, weather, genotype, and environmental covariate files spanning 21 field sites across 10 years. We trained our model on data from 2014 to 2022, validated model performance on 2023, and tested on the competition's 2024 test set. Our train split contained 150,000 samples, while our validation and test splits contained around 9,500 samples each. 
 
+Although we had a large number of samples, data quality was variable across years and field sites. As the authors state in the competition's documentation: 
+
+\begin{displayquote}
+"While we have curated and lightly filtered the data for quality we have \textbf{PURPOSELY} left much of the data in raw formats. There is also extensive missing data. These are the realities of working with large agricultural datasets!" \cite{g2f-maize-2025}
+\end{displayquote}
+
+Extensive preprocessing, including filtering and imputation, was necessary to address inconsistencies and ensure reliable performance. We detail the steps taken to clean our marker and environmental data in sections \ref{sec:marker-preproc} and \ref{sec:env-preproc} respectively.
+
+\subsubsection{Marker Data}\label{sec:marker-preproc}
+Genotype data were provided as single nucleotide variant (SNV) markers. Details about data collection are specified in the competition documentation \cite{g2f-maize-2025}.
+
+Each diploid marker sequence consisted of 2240 loci. At each locus, alleles were encoded according to the scheme in Table~\ref{tab:vocabulary}. A value of $0$ represents two major alleles, a value of $1$ represents a heterozygous pair of alleles (major-minor), and a value of $2$ represents two minor alleles. 
+
+\begin{table}[h!]
+    \centering
+    \renewcommand{\arraystretch}{1.5}
+    \begin{tabular}{@{} l c @{}}
+        \toprule
+        \textbf{Allele Combination} & \textbf{Value} \\
+        \midrule
+        Major-Major (\textit{AA}) & 0 \\
+        Major-Minor (\textit{Aa}) & 1 \\
+        Minor-Minor (\textit{aa}) & 2 \\
+        \bottomrule 
+    \end{tabular} 
+    \caption{Genomic Input Marker Encodings}
+    \label{tab:vocabulary}
+\end{table}
+
+Marker data preprocessing consisted of filtering and imputation. We excluded genotypes lacking marker data and removed loci with more than $10\%$ missing values. Remaining missing loci were imputed using a parent-based median strategy: genotypes were grouped with others sharing at least one parent, and missing loci were replaced with the group median.
+
+\subsubsection{Environmental Data}\label{sec:env-preproc}
+The competition provided four categories of environmental data: trait data, soil data, weather data, and environmental covariates. Additionally, the competition organizers provided metadata with descriptions of each variable. More details on environmental data collection can be found in the competition manuscript \cite{g2f-maize-2025}.
+
+Trait data, representing yield outcomes, served as the prediction target. We excluded all rows which lacked either yield measurements or complete environmental data.
+
+We pruned highly correlated environmental features (those with a Pearson correlation coefficient $>0.98$) using a correlation network approach. Each feature was represented as a node, and the edges connected features that exceeded the correlation threshold. The feature with the highest degree in each correlated cluster was retained. In the case of equal degree, one feature was selected at random. This approach allowed us to retain the signal provided from correlated variables while reducing our feature space.
+
+After dropping missing and correlated features, we performed imputation on the weather station data included in the competition dataset. For weather stations with partially missing data, we replaced missing observations with the mean latitude/longitude data of all existing years. One research station, location TXH4, had no location data present. We used the Texas Tech New Deal Research farm \cite{txh4} as a proxy for this weather station to retrieve the coordinates for this station, since both are located in Lubbock, Texas. We used the facility's official website to retrieve the New Deal Research Farm's latitude and longitude.
+
+Following filtering and imputation, we integrated our location and  environmental covariate datasets into a unified set of 374 variables. Continuous variables were standardized to zero mean and unit variance, and the scaler was fit only on the training set to prevent data leakage.
+
+\subsection{Model Architecture}
+We developed a multi-input model to predict maize yield as a function of both genotype and environment. The architecture comprises three specialized encoder blocks: a transformer to model long-range dependencies among genetic markers, a convolutional neural network (CNN) to capture local linkage disequilibrium, and a feed-forward network (FFN) to represent environmental covariates. The outputs of these encoders are combined through a learned weighted-sum mechanism and passed to a genotype–by-environment (G$\times$E) transformer module, which models interactions between genetic and environmental features. An overview of the full architecture is shown in Figure~\ref{fig:fullarch}.
+
+\begin{figure}
+    \centering
+    \includegraphics{figs/gxe-transformer-fullarchitecture.pdf}
+    \caption{Overall Model Architecture.}
+    \label{fig:fullarch}
+\end{figure}
+
+\subsubsection{Marker-Encoding Transformer}\label{sec:tf-block}
+
+We used a transformer block to capture global dependencies in our input marker sequences (Figure \ref{fig:transformerblock}). Long-range dependencies across loci are critical in genomic prediction, as interactions among distant variants can influence phenotypes. We follow the architecture defined by GPT-2 \cite{gpt2} for our transformer blocks with slight architectural changes: we apply dropout after both our multi-head attention and feed-forward layers to reduce overfitting, and we apply layer normalization before our input to these layers instead of after.
+
+We constructed our model input to handle the genotypic input that encodes allele frequency. Each of the 2240 loci was one-hot encoded into three channels corresponding to the allele states specific in Table \ref{tab:vocabulary}, yielding an input tensor shape of $(2240, 3)$. We embed the sequence input with both a trainable marker embedding layer and a static sine-cosine positional embedding layer, as introduced in \cite{attention}.
+
+Since the goal of our model is to encode a sequence instead of predict future tokens, we utilized bidirectional attention \cite{bert}, allowing the transformer block to capture related tokens both before and after a token in the sequence.
+
+The transformer encoder produced an output tensor of size (2240, \textit{embedding dimension}). The embedding dimension is a user-specified parameter that is fixed across all model components. In our best performing model, we used an embedding dimension of $256$.
+
+\begin{figure}
+    \centering
+    \includegraphics{figs/gxe-transformer-transformerblock.pdf}
+    \caption{Transformer for Encoding Long-Range Genotype Dependencies}
+    \label{fig:transformerblock}
+\end{figure}
+
+\subsubsection{Linkage Disequilibrium Encoding CNN}
+We used a CNN to encode linkage disequilibrium (LD) in our genotype input. CNNs are well-suited for capturing local autocorrelation \cite{deeplearningreview}, making them a natural choice to model LD along marker sequences. We implemented an architecture inspired by ResNet's residual blocks \cite{resnet}, but used a one-dimensional convolutional kernel due to the shape of our input. 
+
+As with the transformer block, our input shape is (2240, 3), where each channel represents the one-hot encoding vector for a locus. The first layer in our LD encoder is a convolutional "projection" layer, used to reshape the channel dimension from size three to our desired embedding dimension via the number of kernels. We keep the embedding dimension equal across all blocks in our model.
+
+After projecting our input sequence to the desired embedding space, we utilize a residual block structure inspired by \cite{resnet}. Our block structure consists of a one-dimensional convolution layer with \textit{embedding dimension} kernels and "same" padding to retain the original input shape, followed by group normalization, ReLU activation and dropout. A post-activation residual connection also connects the input and output of each block. We treat the number of LD-encoding blocks in our model as a hyperparameter. Our best model had $N=2$ blocks; deeper CNNs did not improve performance in our preliminary experiments.
+
+The CNN output has size (2240, \textit{embedding dimension}); the output retains the same number of marker indices as the input, but each marker representation is higher-dimensional. Since we keep the embedding dimension equal across all blocks, our best model's LD embedding dimension was also $256$.
+
+\begin{figure}
+    \centering
+    \includegraphics{figs/gxe-transformer-cnn.pdf}
+    \caption{Convolutional Neural Network for Encoding Linkage Disequilibrium in Marker Sequences}
+    \label{fig:cnn}
+\end{figure}
+
+\subsubsection{Environment Encoding Feed Forward Neural Network}
+We used a feed-forward neural network (FFN) to process our 374 environmental covariates. The network has a stacked block structure with residual connections, visualized in Figure \ref{fig:ffwd}. We chose to encode environmental covariates with an FFN since there was no spatial or long-distance relationship between variables. Inputs were standardized to zero mean and unti variance before entering the FFN. 
+
+Our FFN block consisted of four layers: a linear layer, GELU activation, dropout, and layer normalization. As with the transformer block, we included a post-activation residual connection to improve gradient flow and allow for deeper architectures \cite{resnet}. The number of stacked FFN blocks was treated as a hyperparameter; in our best-performing configuration, we used $N=1$.
+
+Our linear layer projected the output to the same embedding dimension used across all encoders. Our block output was of shape (\textit{embedding dimension}). Because environmental covariates lack a sequence dimension, the encoder output was broadcast along the sequence axis (length $2240$) to align with the marker representations, yielding a final block output of ($2240$, \textit{embedding dimension}). 
+
+\begin{figure}
+    \centering
+    \includegraphics{figs/gxe-transformer-ffwd.pdf}
+    \caption{Feed-Forward Network for Encoding Environmental Covariates}
+    \label{fig:ffwd}
+\end{figure}
+
+\subsubsection{G $\times$ E Encoding Transformer}
+We utilized a second transformer block to calculate a G $\times$ E vector representation for each sample given our CNN, Transformer, and FFN inputs. The architecture is visualized in Figure \ref{fig:gxeblock}; the transformer block structure exactly matches the genomic sequence transformer detailed in Section \ref{sec:tf-block}.
+
+To combine input representations, we used a learned weighted sum mechanism. Each encoder output was scaled by a single learned scalar weight which was broadcast across the sequence and embedding dimensions. This weighting scheme allows the model to scale the importance of each encoder prior to calculating the G $\times$ E interaction. Additionally, using only a single parameter for weighting each block increases the model's interpretability, as it provides a coarse estimate of importance for each individual encoder based on the magnitude of these weights. Our weighted sum layer produces an output of size (2240, \textit{embedding dimension}).
+
+The weighted sum output is then propagated through our G $\times$ E transformer block, which calculates the long-range dependencies between our encoded tokens. Although our layer structure for this transformer block is the same as the architecture specified in Section \ref{sec:tf-block}, we double the amount of transformer blocks to $N=2$ in our best-performing model. This increases the amount of parameters dedicated to G $\times$ E calculation, which is important to capture the highly non-linear relationship between these factors. Our transformer block produces an output of the same shape as its input: (2240, \textit{embedding dimension}).
+
+To obtain a scalar yield prediction, we reduced the G $\times$ E output to a fixed-length vector representation and mapped it to a single neuron. To perform this reduction, we take the mean across our sequence dimension, which has the effect of capturing the "average representation" across all loci. This reduces our output to a vector of size (\textit{embedding dimension}), which we then propagate through a fully-connected layer with an output size of one to produce our yield prediction.
+
+\begin{figure}
+    \centering
+    \includegraphics{figs/gxe-transformer-gxe.pdf}
+    \caption{Transformer Block for Encoding G $\times$ E Interactions.}
+    \label{fig:gxeblock}
+\end{figure}
+
+\subsection{Training}
+\subsubsection{Multitask Optimization}
+We trained our model to jointly optimize two tasks: Pearson correlation (\ref{eq:pcc}) and mean squared error (\ref{eq:mse}). Because PCC values range from $-1$ to $1$, subtracting PCC from 1 reframes the maximization of correlation as minimization of loss, with higher correlations producing lower loss values. The PCC loss conditions our model to capture the variation between samples in various environment-years, while MSE allows the model to correctly scale the data.
+
+\begin{equation}\label{eq:pcc}
+    L_{\mathrm{PCC}} = 1 - \Bigg( \frac{\sum ( y_i - \bar{y}) (\hat{y}_i - \hat{\bar{y}})}{\sqrt{\sum (y_i - \bar{y})^2} \sqrt{ (\sum\hat{y}_i - \hat{\bar{y}})^2}} \Bigg)
+\end{equation}
+
+\begin{equation}\label{eq:mse}
+    L_{\mathrm{MSE}} = \frac{1}{n} \sum^{n}_{i=1} (y_i - \hat{y}_i)^2
+\end{equation}
+
+Additionally, due to the varying magnitudes of our objective functions, we introduced a scaling parameter, $\alpha$, to our joint loss function. In our best training run using joint optimization, we set $\alpha = 1 \times 10^{-5}$. Our joint optimization objective is seen in Equation \ref{eq:jointloss}.
+
+\begin{equation}\label{eq:jointloss}
+    L_{\mathrm{Total}} = \alpha L_{\mathrm{MSE}} + (1 - \alpha) L_{\mathrm{PCC}}
+\end{equation}
+
+\subsubsection{Training Details}
+We utilized Oak Ridge National Laboratory's Frontier Supercomputer to train our model. To expedite training and implement larger global batch sizes, we implemented distributed data parallel (DDP) training. We trained on eight compute nodes with four AMD MI250X gpu accelerators (eight GPU dies per node exposed as devices) each. For our best model, we set the minibatch size to 256, yielding a global batch size of $8 * 8 * 256 = 16,384$. Our best model run was trained for a maximum of 5,000 total epochs with an early stopping callback of 200 epochs monitoring validation loss to prevent overtraining. In reality, our best training runs ended between 500 and 1,500 epochs. In addition to early stopping, we implemented a learning rate schedule similar to that specified in \cite{gpt2}, where we set a learning rate warmup time of 10 epochs, and a cosine decay schedule from $1e^{-4}$ to $1e^{-6}$, with the minimum reached at the midpoint of training. We used the AdamW optimizer \cite{adamW} with a weight decay parameter of $1e^{-5}$ to add regularization to our weights.
+
+\subsection{Evaluation}
+The competition's evaluation metric is the average PCC between predicted and observed yield values across all locations in the  2024 test set. Each environment contributed equally, regardless of sample size, and missing and unclean observations were dropped by the competition organizers prior to releasing the ground truth values. Since the evaluation code was closed source, we recreated the evaluation scheme based on the competition documentation \cite{g2f-maize-2025}. We calculated the PCC for each environment in the 2024 dataset using \texttt{scipy.stats.pearsonr} from the \texttt{scipy} package \cite{scipy}, and we averaged the PCC values across environments to produce a total PCC value. The pseudocode for our algorithm is defined in Algorithm \ref{alg:eval-pcc}.
+
+\begin{algorithm}
+\caption{Competition PCC Evaluation}
+\label{alg:eval-pcc}
+\For{each environment $e$ in test set}
+    \State $y \gets$ true yields for $e$
+    \State $\hat{y} \gets$ predicted yields for $e$
+    \State $PCC_e \gets \text{Pearson}(y, \hat{y})$
+\EndFor
+\State $PCC_{total} \gets \frac{1}{E} \sum_{e=1}^E PCC_e$
+\end{algorithm}
+
+
+%%% RESULTS
 \section{Results}
+\begin{table}[h!]
+    \centering
+    \begin{tabular}{cccccccccc}
+        \toprule
+        \makecell{G \\ Layers} & 
+        \makecell{E \\ Layers} & 
+        \makecell{LD \\ Layers} & 
+        \makecell{G$\times$E \\ Layers} & 
+        \makecell{Weighted \\ Sum} &
+        Loss & Dropout & Heads & \makecell{Embed \\ Size} & \makecell{Test \\ PCC} \\
+        \midrule
+        1 & 1 & 2 & 2 & Yes & PCC & 0.15 & 4 & 256 & \textbf{0.496} \\
+        1 & 1 & 2 & 2 & No & Both ($1e^{-5}$) & 0.25 & 4 & 256 & 0.481 \\
+        \bottomrule
+    \end{tabular}
+    \caption{Hyperparameter combinations and model results}
+    \label{tab:internal-results}
+\end{table}
 
-\section{Conclusion}
+\begin{table}[h!]
+    \centering
+    \begin{tabular}{cc}
+        \toprule
+        Team Name & Competition PCC \\
+        \midrule
+        ORNL Comp. Bio & \textbf{0.49556} \\
+        Naaa & 0.45005 \\
+        NJUST\_KMG1 & 0.44402 \\
+        Model 2022 \cite{g2f-maize-2025} & 0.43766 \\
+        wer2 & 0.43766 \\
+        PARaBra & 0.43710 \\
+        transform(Base) & 0.42605 \\
+        \bottomrule
+    \end{tabular}
+    \caption{2024 G $\times$ E prediction competition results}
+    \label{tab:external-results}
+\end{table}
+
+
+%%% DISCUSSION
+\section{Discussion}
+
+
+\printbibliography
+
 

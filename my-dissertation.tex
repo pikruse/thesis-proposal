@@ -23,12 +23,12 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % TO DO: FILL IN YOUR INFORMATION BELOW - READ THIS SECTION CAREFULLY
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\title{My Thesis or Dissertation Title}	       % title of thesis/dissertation
+\title{Deep Learning for Biological Discovery Across Omics Layers: From Phenomics to Agentic Reasoning}	       % title of thesis/dissertation
 \author{Peter Kruse}                % author's name
 \copyrightYear{2026}            % copyright year of your thesis/dissertation
-\graduationMonth{May}         % month of graduation of your thesis/dissertation
+\graduationMonth{June}         % month of graduation of your thesis/dissertation
 \majorProfessor{Dr. Daniel Jacobson}	    % advisor's nameb
-\keywords{Systems Biology, Deep Learning, Genetics, Computer Vision, Large Language Models, Multiomics}	% keywords (optional) separated by commas - these are used in the PDF file properties
+\keywords{Systems Biology, Deep Learning, Genetics, Computer Vision, Large Language Models, Multi-Omics}	% keywords (optional) separated by commas - these are used in the PDF file properties
 \viceProvost{Dixie L. Thompson} % vice provost name
 \major{Data Science Engineering}					% major: Computer Science, Biology, Mathematics, ...
 \degree{Doctor of Philosophy}	    			% degree: Doctor of Philosophy, Master of Science, Master of Arts, ...
@@ -37,11 +37,10 @@
 \university{The University  of Tennessee, Knoxville}	% school name
 % THIS TEMPLATE ACCOMMODATES UP TO 5 COMMITTEE MEMBERS - ENTER ONLY THE NAMES OF THE MEMBERS ON YOUR COMMITTEE
 \numberOfCommitteeMembers{3} % enter the number of committee members
-\committeeMemberA {Committee Member 1}	% name of committee chair
-\committeeMemberB {Committee Member 2}	% name of second committee member
-\committeeMemberC {Committee Member 3}	% ... you get the trend!
-\committeeMemberD {Committee Member 4}	% if your committee has less than 4 members, you do not need to edit the
-\committeeMemberE {Committee Member 5}  % rest of committee names
+\committeeMemberA {Dr. Daniel Jacobson}	% name of committee chair
+\committeeMemberB {Dr. Michael Langston}	% name of second committee member
+\committeeMemberC {Dr. Katherine Schuman}	% ... you get the trend!
+\committeeMemberD {Dr. Hairong Qi}	% if your committee has less than 4 members, you do not need to edit the
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % LOAD SOME USEFUL PACKAGES
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -76,6 +75,26 @@
 \usepackage{comment}
 \usepackage{lineno}
 
+% add a proposal title page edit
+\makeatletter
+\renewcommand{\makeTitlePage}{%
+    \thispagestyle{empty}%
+    \begin{spacing}{1.5}%
+    \vspace*{0.3in}%
+    \begin{center}%
+        {\huge\bfseries \@title \par}%
+        \vfill
+        {\Large\rmfamily
+            Dissertation Proposal\\[1.5em]
+            \@university\\[1em]
+            \@author\\[1em]
+            \@graduationMonth\ \@copyrightYear%
+            \par}%
+    \end{center}%
+    \end{spacing}%
+    \cleardoublepage%
+}
+\makeatother
 
 \def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
     T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
@@ -87,7 +106,7 @@
     filecolor=blue,
     urlcolor=blue,
     citecolor=blue,
-    }\      
+    } 
     
 %%% PACKAGES THAT ARE PRELOADED WITH THE CLASS ARE: amsmath,amsthm,amssymb,setspace,geometry,hyperref,and color
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
