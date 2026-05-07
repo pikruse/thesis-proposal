@@ -31,7 +31,7 @@ Our raw data consisted of 661 scanned images of Pennycress (Thlaspi arvense L.) 
 
 \begin{figure}[!ht]
     \center
-    \includegraphics[width=0.75\linewidth]{figs/pennycress_raw_scans.png}
+    \includegraphics[width=0.75\linewidth]{figures/pennycress-unet/pennycress_raw_scans.png}
     \caption{Raw Pennycress Leaf Image} \label{pennycress_original} 
 \end{figure}
 
@@ -43,13 +43,13 @@ To train the U-Net in a supervised manner, we created pixel-level annotated labe
     \centering
     \begin{subfigure}[t]{0.4\textwidth}
         \centering
-        \includegraphics[height=3in]{figs/pennycress_single_leaf.png}
+        \includegraphics[height=3in]{figures/pennycress-unet/pennycress_single_leaf.png}
         \caption{Separated Pennycress Leaf Image}
     \end{subfigure}
     ~
     \begin{subfigure}[t]{0.4\textwidth}
         \centering
-        \includegraphics[height=3in]{figs/pennycress_annotated_leaf.png}
+        \includegraphics[height=3in]{figures/pennycress-unet/pennycress_annotated_leaf.png}
         \caption{Annotated Pennycress Leaf Image}
     \end{subfigure}
     \caption{Separated and Annotated \textit{T. arvense} Images}  \label{pennycress_split} 
@@ -62,7 +62,7 @@ After separation, we padded each image with 128 pixels in all directions. Image 
 
 \begin{figure}[!ht]
     \center
-    \includegraphics[width=\linewidth]{figs/pennycress_preprocessed_images.png}
+    \includegraphics[width=\linewidth]{figures/pennycress-unet/pennycress_preprocessed_images.png}
     \caption{Preprocessed Pennycress Images}\label{pennycress_preproc}
 \end{figure}
 
@@ -78,7 +78,7 @@ We selected each type of transformation to combat certain issues that occur duri
 
 \begin{figure}[!ht]
     \center
-    \includegraphics[width=\linewidth]{figs/tile_gen.png}
+    \includegraphics[width=\linewidth]{figures/pennycress-unet/tile_gen.png}
     \caption{Generated Image Tiles}\label{tile_gen_ex}
 \end{figure}
 
@@ -99,7 +99,7 @@ The next three blocks in the network make up the expansive step. a 2 $\times$ 2 
 
 \begin{figure}[!ht]
     \center
-    \includegraphics[width=\linewidth]{figs/PennycressUNet3.png}
+    \includegraphics[width=\linewidth]{figures/pennycress-unet/PennycressUNet3.png}
     \caption{Pennycress U-Net architecture}
     \label{pennycressunet}
 \end{figure}
@@ -149,7 +149,7 @@ In addition to measuring area and perimeter features, we utilized the watershed 
 
 \begin{figure}[!ht]
     \center
-    \includegraphics[width=\linewidth]{figs/watershedding.png}
+    \includegraphics[width=\linewidth]{figures/pennycress-unet/watershedding.png}
     \caption{Watershed Segmentation of Pennycress Seeds}
     \label{watershedding}
 \end{figure}
@@ -203,7 +203,7 @@ We evaluated the U-Net's segmentation performance on 5 raw images containing 61 
 
 \begin{figure}[!ht]
     \center
-    \includegraphics[width=\linewidth]{figs/full-image-prediction.png}
+    \includegraphics[width=\linewidth]{figures/pennycress-unet/full-image-prediction.png}
     \caption{U-Net Prediction on a single Pennycress Image}
     \label{segmentations}
 \end{figure}
@@ -218,14 +218,14 @@ Additionally, we examined correlations between wing area and seed area and count
 
 \begin{figure}[!ht]
     \center
-    \includegraphics[width=\linewidth]{figs/area-distributions.png}
+    \includegraphics[width=\linewidth]{figures/pennycress-unet/area-distributions.png}
     \caption{Distribution of Areas by Seed Pod Tissue}
     \label{area_dist}
 \end{figure}
 
 \begin{figure}[!ht]
     \center
-    \includegraphics[width=\linewidth]{figs/wing-area-v-seed-area-count.png}
+    \includegraphics[width=\linewidth]{figures/pennycress-unet/wing-area-v-seed-area-count.png}
     \caption{Wing Area vs. Seed Area and Count}
     \label{wing_seed_corr}
 \end{figure}

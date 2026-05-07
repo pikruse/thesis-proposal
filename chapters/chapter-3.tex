@@ -4,14 +4,14 @@ Genomic prediction is an important task in the field of plant biology, enabling 
 
 %%% INTRODUCTION
 \section{Introduction}
-Genotype-by-environment (G $\times$ E) interactions are a key mechanism underlying crop stability and performance \comment{[CITE]}. In turn, accurately modeling these interactions has important practical implications, including increased food security, development of alternate fuel sources, and optimized farming practices \comment{[CITE HERE]}. However, due to to the amount of heterogeneous data required to model interactions, G $\times$ E prediction is a task that requires a diversity of knowledge, including genetics, agronomy, statistics, and computer science.
+Genotype-by-environment (G $\times$ E) interactions are a key mechanism underlying crop stability and performance \todocite{[CITE]}. In turn, accurately modeling these interactions has important practical implications, including increased food security, development of alternate fuel sources, and optimized farming practices \todocite{[CITE HERE]}. However, due to to the amount of heterogeneous data required to model interactions, G $\times$ E prediction is a task that requires a diversity of knowledge, including genetics, agronomy, statistics, and computer science.
 
 Early genomic prediction approaches relied on small, single-environment datasets and statistical models that primarily captured additive effects, such as genomic best linear unbiased prediction (GBLUP) and Bayesian linear mixed models. While effective for narrow settings, these methods struggle to scale to heterogeneous data and capture non-linear interactions among loci and environments.
 
 An increase in publicly available data has brought both renewed focus and challenge to GxE prediction. The Genomes to Fields (G2F) Maize G $\times$ E prediction challenge formalized this focus by curating a public dataset of genotypes and environments, containing over 150,000 observations across 10 years and hundreds of field sites \cite{g2f-maize-2025}.  
 
 Deep learning models are well-suited for genomic prediction because they can capture dependencies on the local and global level across a heterogeneity of data sources. Due to the expansion of publicly available data along with innovations in consumer graphics processing units, it is becoming increasingly more feasible to apply deep learning to G $\times$ E prediction
-\comment{add comment about previous deep learning projects}
+\todocite{add comment about previous deep learning projects}
 
 In this work, we developed a deep learning model, trained on the g2f maize prediction dataset, to predict maize grain yield. We used a multi-input structure to model the interaction between linkage disequilibrium, global genotype, and environmental covariates.
 
@@ -94,7 +94,7 @@ We developed a multi-input model to predict maize yield as a function of both ge
 
 \begin{figure}
     \centering
-    \includegraphics{figs/gxe-transformer-fullarchitecture.pdf}
+    \includegraphics{figures/gxe-tf/gxe-transformer-fullarchitecture.pdf}
     \caption{Overall Model Architecture.}
     \label{fig:fullarch}
 \end{figure}
@@ -111,7 +111,7 @@ The transformer encoder produced an output tensor of size (2240, \textit{embeddi
 
 \begin{figure}
     \centering
-    \includegraphics{figs/gxe-transformer-transformerblock.pdf}
+    \includegraphics{figures/gxe-tf/gxe-transformer-transformerblock.pdf}
     \caption{Transformer for Encoding Long-Range Genotype Dependencies}
     \label{fig:transformerblock}
 \end{figure}
@@ -127,7 +127,7 @@ The CNN output has size (2240, \textit{embedding dimension}); the output retains
 
 \begin{figure}
     \centering
-    \includegraphics{figs/gxe-transformer-cnn.pdf}
+    \includegraphics{figures/gxe-tf/gxe-transformer-cnn.pdf}
     \caption{Convolutional Neural Network for Encoding Linkage Disequilibrium in Marker Sequences}
     \label{fig:cnn}
 \end{figure}
@@ -141,7 +141,7 @@ Our linear layer projected the output to the same embedding dimension used acros
 
 \begin{figure}
     \centering
-    \includegraphics{figs/gxe-transformer-ffwd.pdf}
+    \includegraphics{figures/gxe-tf/gxe-transformer-ffwd.pdf}
     \caption{Feed-Forward Network for Encoding Environmental Covariates}
     \label{fig:ffwd}
 \end{figure}
@@ -157,7 +157,7 @@ To obtain a scalar yield prediction, we reduced the G $\times$ E output to a fix
 
 \begin{figure}
     \centering
-    \includegraphics{figs/gxe-transformer-gxe.pdf}
+    \includegraphics{figures/gxe-tf/gxe-transformer-gxe.pdf}
     \caption{Transformer Block for Encoding G $\times$ E Interactions.}
     \label{fig:gxeblock}
 \end{figure}

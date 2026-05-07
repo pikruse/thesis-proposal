@@ -110,7 +110,7 @@
 \RequirePackage{setspace}                   % line spacing
 \RequirePackage{lscape}                     % landscape pages
 \RequirePackage[vcentering,dvips]{geometry}	% help with margins
-\RequirePackage[pdftex,plainpages=false,pdfpagelabels=true,breaklinks=true,pagebackref]{hyperref} % for pdf bookmarks
+\RequirePackage[pdftex,plainpages=false,pdfpagelabels=true,breaklinks=true]{hyperref} % for pdf bookmarks
 \RequirePackage{color}
 %----------------------------------------------------------------------------------------------------%
 % define theorem, corollary, and lemma environments
