@@ -1,12 +1,11 @@
-\chapter{pennycress-unet}\label{ch:pennycress}
-\section{Introduction}
+\chapter{A High-Throughput Deep Learning Pipeline for Image-Based Pennycress Phenotyping}\label{ch:pennycress}
 
+\section{Introduction}
 Pennycress (\textit{Thlaspi arvense L.}) is a winter annual crop belonging to the \textit{Brassicaceae} (mustard) family; it is similar to canola, rapeseed, and camelina due to its seed-oil composition and content \cite{moser2009production}. Although it is generally considered a pest (weed), pennycress’s amenability to genetic modification and commercialization prospects have caused scientists to consider it as a possible seed-oil based bioenergy feedstock. Additionally, pennycress has shown potential as a cover crop that can be grown in between corn-soy rotations during fallow periods due to its life cycle characteristics \cite{moser2009production}.
 
 To realize this potential as a bioenergy crop, it is necessary to assess the standing genetic variation for feedstock-critical traits across natural accessions of pennycress. Plant phenotyping, the process of measuring and characterizing expressed traits such as plant height, seed yield, and flowering time, is a crucial starting point for these studies. Measuring phenotypes on a population scale allows scientists to make conclusions about environmental and climatic influence on these traits and understand their genetic architecture.
 
 However, intensive phenotyping, the measurement of many traits from a single sample, is widely considered to be a bottleneck in plant research \cite{wang2019high}. In crop system systems such as pennycress, seed pod phenotypes are considered too tedious and time-consuming to collect by hand, meaning that valuable information is systematically ignored \cite{pod_shattering, seed-cnn}.
-
 
 Image-based phenotyping is a new frontier in plant biology that allows researchers to extract information about plant species that would be impossible to measure by hand \cite{lagergren2023fewshot}. The process involves a combination of physical tools, software, and domain expertise to obtain phenotypic information. Unlike manual phenotyping, which requires different methods to extract various phenotypes, image-based phenotyping methods can be applied at any scale, ranging from microscopic cell images to satellite imagery \cite{lagergren2023fewshot}. Furthermore, image-based methods can extract complex topological and morphological features from these domains, allowing researchers to garner even more information than manual phenotyping would provide \cite{lagergren2023fewshot}. To extract such features, many image-based methods aim to distinguish biological structures in the foreground of an image from the background. Although it is possible to perform this task by physically changing the lighting scheme when capturing images and using traditional segmentation techniques like thresholding, recent work has utilized artificial intelligence methods to accomplish this goal using the raw image data directly.
 
@@ -17,6 +16,21 @@ Despite the progress made using image-based phenotyping for other plant species,
 Additionally, a high-throughput phenotyping pipeline would allow scientists to discover novel connections between traits by measuring all parts of the seed pod instead of just seeds. For example, \cite{wing-seed-assoc} found that pod size can regulate seed growth in members of the Brassicacae family; this hypothesis can be tested within pennycress using a population-scale study. Using such a framework in conjunction with genome-wide association studies (GWAS) would allow researchers to pinpoint the underlying genetic drivers of these intensively phenotyped traits \cite{uffelmann2021genome}.
 
 In this work, we present an automated deep learning pipeline for pennycress seed pod phenotyping. We implemented U-Net, a state-of-the-art deep learning model, to semantically segment wing, envelope, and seed pixels in pennycress seed pod images, and we developed a novel loss function to account for uncertainty in hand-annotated ground truth labels. We created an open-source ground truth dataset of 365 hand-annotated label images to use as training and validation data. Our model achieved over 96\% accuracy for wing segmentation, 95\% accuracy for envelope segmentation, and almost 80\% accuracy for seed segmentation. After training, our team validated the model by performing a population-scale study on over 11,000 seed pods from 771 unique genotypes. We extracted over 50 biologically relevant phenotypes from each seed pod and examined relationships between these traits across genotypes. The code and data are available on our \href{https://github.com/pikruse/pennycress-segmentation}{project github}.
+
+\subsection{Study Objectives}
+This work pursues a three-stage research trajectory. First, we train a deep learning model to measure Pennycress seed pods at population scale. Next, we propose to map measured traits to candidate genes through genome-wide association. Finally, we propose to derive and mechanistically interpret functionally coherent gene modules from those candidate genes. The model that drives the measurement stage is treated as a replaceable component of the pipeline, with the best-performing architecture selected through systematic comparison and benchmarking. Specifically, we pursue five objectives:
+
+\begin{enumerate}
+    \item \textbf{Establish a baseline deep-learning segmentation pipeline for Pennycress seed pods.} We train a U-Net model with a novel boundary-weighted loss function on a hand-annotated dataset of 365 seed pod images, providing a baseline for systematic architecture comparison.
+
+    \item \textbf{Demonstrate population-scale phenotyping with the baseline model.} We apply the baseline model to over 11,000 seed pods across 771 naturally occurring Pennycress accessions, extract over 50 phenotypes per pod, and assess the biological validity of the extracted traits through their distributions and known wing-seed associations.
+
+    \item \textbf{Identify the best-performing segmentation architecture for Pennycress.} We propose to systematically benchmark a panel of modern segmentation architectures: nnU-Net, DeepLabV3+, SegFormer, Mask2Former, SAM 2, and MedSAM. Each architecture will be evaluated with and without fine-tuning, with particular attention to seed segmentation performance. The best-performing model will be adopted for downstream phenotyping.
+
+    \item \textbf{Identify candidate genes from phenotype-driven genome-wide associations.} We propose to build predictive expression networks (PENs) from the extracted phenotypes using iRF-LOOP and run a genome-wide association study (GWAS) to map phenotypes to genomic regions. Significant SNP loci will be mapped to their nearest associated genes to construct a candidate seed geneset. 
+
+    \item \textbf{Derive and mechanistically interpret gene modules from the candidate geneset.} We propose to apply \textbf{\textsc{Mentor}} to the candidate seed geneset to derive functionally related gene modules, and to perform a proof-of-concept mechanistic interpretation of these modules using \textbf{\textsc{Mentor-IA}}.
+\end{enumerate}
 
 \section{Methods}
 
