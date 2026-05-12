@@ -1,53 +1,20 @@
 \chapter*{Executive Summary}\label{ch:exec-sum}
 
 \section{Motivation}
-Modern biology is becoming increasingly data-rich but interpretation-limited. Data collection has become cost effective in many realms, enabling the collection of novel datasets. High-throughput imaging technology has lead to large-scale plant phenotyping datasets, while advanced sequencing methods allow researchers to capture genome-scale variation over entire populations. Global consortia efforts have led to large sets of environmental metadata across climates, while published experimental data and computational frameworks have lead to the curation and creation of biological networks and large literature corpora. These datasets comprise \textbf{phenotypes}, or an organism's observed traits, \textbf{genotypes}, or an organism's genetic information, \textbf{environments}, or measurements of external conditions which affect an organism, and \textbf{networks}, which represent the interactions between biological entities through nodes and edges.
+Modern biology has become increasingly data-rich but interpretation-limited. Data collection is now cost-effective in many realms, enabling the construction of novel datasets. High-throughput imaging technology has led to population-scale phenotyping datasets, while advanced sequencing methods allow researchers to capture genome-scale variation across populations. Global consortia efforts have standardized environmental metadata across climates and sites, while novel experimental data and computational frameworks have prompted the curation and creation of biological networks and large literature corpora. These data span fundamentally different structures: images contain spatial, pixel-level information; genotypes comprise high-dimensional, sparse signals; environments exist in a continuous and contextual space; and networks represent relational graph structures. Handling these different structures requires systems with different inductive biases; no single model class can handle them all.
 
-Although a wealth of data is available to researchers, these data are heterogenous, structured, and context dependent. Images consist of 
-
-\begin{itemize}
-    \item biological data are heterogenous, structured, and context-dependent
-    \begin{itemize}
-        \item different biological data types have different structures
-        \item images: spatial pixels and object boundaries, difficult to detect biological structures and measure traits
-        \item genotype data: many markers across individuals; difficult to link variation to traits
-        \item environmental data: continuous/contextual conditions; modeling context-dependent effects
-        \item networks: relationships among biological entities; generating mechanistic hypotheses
-        \item because of varying structures, modeling approaches require different inductive biases to succeed
-    \end{itemize}
-
-    \item deep learning is useful, but biological discovery requires problem-specific design
-    \begin{itemize}
-        \item biological applications of deep learning need architectures, objectives, and evaluations that match the scientific question
-        \item segmentation models convert images into measurable phenotypes
-        \item multi-modal prediction models combine genotype and environment
-        \item tool-using RL systems support evidence-grounded biological interpretation
-    \end{itemize}
-
-    \item disseration addresses three linked stages of biological discovery
-    \begin{itemize}
-        \item measurement: given raw data, how can we extract valuable -omics information
-        \item prediction: given measured -omics information, how can we accurately predict outcomes?
-        \item interpretation: given predicted outcomes, experimental evidence, and context, how can we use deep learning to generate evidence-backed, tool-grounded mechanistic hypotheses?
-    \end{itemize}
-
-    \item larger contribution: a framework for AI-enabled biological discovery
-    \begin{itemize}
-        \item biological: extracting, predicting, and interpreting
-        \item computational: designing deep learning systems for different biological structures
-        \item practical: producing reusable pipelines, models, evaluations, and software
-    \end{itemize}
-\end{itemize}
-
-\section{Technical Gap, Dissertation Thesis}
+\section{Thesis Statement}
+While progress has been made applying deep learning to localized areas, biological data are heterogeneous and structurally varied, making the gains from current deep learning methods unequally distributed. Because of the nature of biological data, bridging the gap between inputs and interpretation requires problem-specific systems. Architectures, objectives, and benchmarks must be designed with appropriate inductive biases. This proposal demonstrates the utility of this framework across three linked stages of biological discovery: \textbf{measurement}, \textbf{prediction}, and \textbf{interpretation.}
 
 \section{Chapter 2 Summary}
-High throughput plant phenotyping is an important task in the field of biology. Population-scale phenotyping methods allow researchers to extract valuable information about plant characteristics, providing an avenue to discover the genetic architectures governing traits. In recent years, phenotyping has increasingly involved the use of deep learning methods. Architectures like convolutional neural networks (CNNs) allow domain scientists to extract biologically relevant phenotypes by performing tasks such as image segmentation. However, no such framework for phenotyping pennycress (\textit{Thlaspi arvense L.}) exists. In this work, we present an automated deep learning pipeline for intensive pennycress seed pod phenotyping. We implemented U-Net, a state-of-the-art deep learning model, to semantically segment wing, envelope, and seed pixels in pennycress seed pod images. We created an open-source ground truth dataset of 365 hand-annotated label images to use as training and validation data. Our model achieved over 96\% accuracy for wing segmentation, 95\% accuracy for envelope segmentation, and almost 80\% accuracy for seed segmentation. After training, we validated the model further by performing a population-scale study on over 11,000 seed pods from 771 unique genotypes.
+Chapter 2 addresses the \textbf{measurement} stage by extracting quantitative phenotypes from raw imagery. No deep learning framework currently exists for phenotyping pennycress (\textit{Thlaspi arvense L.}), an emerging oilseed cover crop. In this work, we present an automated deep learning pipeline for intensive pennycress seed pod phenotyping, extracting over 50 phenotypes per image. We implemented U-Net, a state-of-the-art deep learning model, to semantically segment wing, envelope, and seed pixels in seed pod images, and we created an open-source ground truth dataset of 365 hand-annotated label images for training and validation. Our model achieved over 96\% accuracy for wing segmentation, 95\% accuracy for envelope segmentation, and almost 80\% accuracy for seed segmentation. We further validated the model through a population-scale study on over 11,000 seed pods from 771 unique genotypes.
 
-\section{Chapter 3 Summary}
-Genomic prediction is an important task in the field of plant biology, enabling breeders to identify lines with desirable traits under diverse environmental conditions. Although accurate prediction of maize yield is crucial for global food security, it remains challenging due to complex genotype-by-environment interactions. In this work, we present a novel multi-input deep learning architecture for maize prediction that encodes global allelic relationships, local linkage disequilibrium (LD), and environmental covariates through transformer, convolutional, and fully-connected (FC) blocks, respectively. We use a mixture-of-experts (MoE) style gating architecture to weigh the importance of each block before combining the individual encoder outputs in the transformer block explicitly capturing G $\times$ E interactions. Training on the publicly available Genomes2Fields (G2F) G$\times$E prediction competition dataset comprising 21 environments over 10 years, we achieve a Pearson correlation coefficient (PCC) of $0.495$ in the 2024 test set, outperforming the competition-winning PCC of $0.45$. Our code is openly available\footnote{\url{https://github.com/Jacobson-CompSysBio/GP-Transformer}}, facilitating reproducibility and future extensions.
+\section{Chapter 3 Summary}\label{sec:ch3}
+Chapter 3 addresses the \textbf{prediction} stage by mapping genotype and environment to phenotype. Accurate maize yield prediction is crucial for global food security, but remains challenging due to complex genotype-by-environment (G$\times$E) interactions. In this work, we present a unified transformer architecture for maize yield prediction that tokenizes single-nucleotide polymorphism (SNP) markers and environmental covariates into a single input sequence, learning G$\times$E interactions through self-attention. Mixture-of-experts (MoE) layers with Top-K routing replace the dense feed-forward blocks, allowing the model to specialize across genetic and environmental contexts. We benchmark this architecture against a suite of variants, including a three-prong encoder-fusion design with dedicated genotype, LD, and environment branches. Training on the publicly available Genomes2Fields (G2F) prediction competition dataset comprising 21 environments over 11 years, we achieve a within-environment Pearson correlation coefficient (PCC) of 0.423 on the 2024 test set, approaching the competition-winning score of 0.45 and exceeding the strongest previously published deep learning baselines we evaluated.
 
-\section{Chapter 4 summary}
+\section{Chapter 4 Summary}\label{sec:ch4}
+Chapter 4 addresses the \textbf{interpretation} stage by reasoning over biological networks to produce evidence-grounded mechanistic hypotheses. While expert-curated corpora and AI-based methods have produced rich relational structures at scale, downstream synthesis remains constrained by human bandwidth and model cost. We propose \textbf{\textsc{Mentor-RL}}, an open-source, tool-using reasoning agent trained with reinforcement learning over verifiable biological-network tasks. \textbf{\textsc{Mentor-RL}} consists of a single policy operating in an act-verify agent loop and is trained with deterministic, schema-grounded rewards that require no proprietary judge models. We expect \textbf{\textsc{Mentor-RL}} to achieve a composite $F_1$ score competitive with frontier models at a substantially lower per-query inference cost, while producing human-readable interpretations with preserved provenance.
 
-\section{Completion plan and expected outputs}
+\section{Completion Plan and Expected Outputs}
+Chapters 2 and 3 are in preparation for submission to [venue] and [venue], respectively; Chapter 4 is proposed work targeting [venue/timeline]. Models in Chapters 3 and 4 are trained at scale using distributed training on the OLCF Frontier supercomputer \cite{frontier}. Upon publication, we will release: the open-source ground truth dataset of hand-annotated seed pod images and segmentation pipeline (Chapter 2); the training and evaluation code (Chapter 3); and the training environment, evaluation harness, and trained checkpoints across pipeline stages (Chapter 4).
 
