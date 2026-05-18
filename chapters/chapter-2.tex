@@ -112,45 +112,37 @@ The next three blocks in the network make up the expansive step. A 2 $\times$ 2 
 \end{figure}
 
 \subsubsection{Boundary-Weighted Cross Entropy Loss}
-To account for uncertainty in the exact boundaries of our ground-truth labels, we implemented a weighted cross-entropy loss that the scales the per-pixel loss by a boundary-aware weight map. Following the formulation introduced for the original U-Net ~\cite{unet}, we computed the weight map as
+To account for uncertainty in the exact boundaries of our ground-truth labels, we implemented a weighted cross-entropy loss that scales the per-pixel loss by a boundary-aware weight map.
 
-We first calculate a raw weight map of distance from seeds by binarizing the seed channel in the image, eroding it, and multiplying it by the original image. We then calculate the euclidean distance from each pixel to the closest border pixel to produce a distance map. We introduce a border weighting parameter $b$ to only weight regions within a certain distance of the border. All pixels exceeding this distance are coerced to a value of $b$ as well. Finally, we normalize the weight map between 0 and 1, and we multiply this normalized map by our weight value $w$ < 1.
+We first compute a raw weight map from the eroded seed mask. We binarize the seed channel, subtract its binary erosion to isolate the boundary ring, and then calculate the Euclidean distance from each pixel to the closest border pixel to produce a distance map. We clip distances at a maximum of $b = 5$ pixels and normalize to the range $[0, 1]$. We evaluated two configurations parameterized by a border weight $w_b$.
 
-After calculating the raw weight map, we min-max normalize it so that pixel values $W_{i,j} \in [0, 1]$. We then invert the weight map so that pixels with a smaller distance to the boundary have a lower weight value. Finally, we scale the weight map so that its range is $W_{i,j} \in [w, 1]$. We then multiply the weight map pixelwise with cross-entropy loss: 
+In the \textbf{boundary down-weighted} configuration ($w_b < 1$), we min-max normalize the raw weight map so that pixel values $W_{i,j} \in [0, 1]$. We then invert the weight map so that pixels with a smaller distance to the boundary have a lower weight value. Finally, we scale the weight map so that its range is $W_{i,j} \in [w_b, 1]$. This configuration treats boundary annotations as the noisiest signal and lets the model rely more on confidently-labeled interior pixels.
 
-\begin{comment}
-To calculate the distances between each pixel and their nearest neighbors from, we adopt the boundary weighting process from \cite{unet}:
+In the \textbf{boundary up-weighted} configuration ($w_b > 1$), we instead clip the raw weight at a minimum of $1$, yielding $W_{i,j} \in [1, w_b]$ so that distant pixels carry weight $1$ and boundary pixels carry weight up to $w_b$. This configuration treats boundaries as the most informative regions to learn.
 
-\begin{align}\label{distancemapcalc}
-W = \exp\bigg(-\frac{1}{2}\bigg(\frac{d_1 + d_2}{b}\bigg)^2\bigg).
-\end{align}
-\end{comment}
+We then multiply the weight map pixelwise with cross-entropy loss and average over pixels: 
 
 \begin{align}\label{wce}
-    L_{WCE}(t, p(\theta)) = - \sum_{j}^{J} \sum_{i}^{I} \sum_{k}^{K} W_{i,j} (t_{i,j,k} \log(p(\theta)_{i,j,k})),
+    L_{WCE}(t, p(\theta)) = - \frac{1}{\mid I \mid \mid J\mid} \sum_{j}^{J} \sum_{i}^{I} \sum_{k}^{K} W_{i,j} (t_{i,j,k} \log(p(\theta)_{i,j,k})),
 \end{align}
 
-\noindent where $t$ is the ground truth segmentation map and $p(\theta)$ is the predicted segmentation map as a function of U-Net parameters. The objective function of the network is to find weights such that the loss is minimized:
-
-\begin{align}
-    \hat{\theta} = \text{argmin}_{\theta} \text{L}(t, p(\theta)).
-\end{align}
+\noindent where $t$ is the ground truth segmentation map and $p(\theta)$ is the predicted segmentation map as a function of U-Net parameters.
 
 
 \subsubsection{Model Training}
-To prevent the model from overfitting, which is a common problem in biological image datasets, we trained it on iterations instead of full epochs. Instead of training on the entire dataset for each epoch, we selected 1000 batches of data and performed backpropagation on these batches. As such, we prevented the model from learning the training examples too well, and the U-Net's training time and computational requirements were lowered. Training the model for 150,000 batches provided the best results at evaluation time. We used an early stopping parameter of 50 iterations, that is, if the model's best total validation loss value did not improve for 50 iterations, the model stopped training.
+We trained the U-Net for up to 150,000 mini-batch updates using the Adam optimizer with a batch size of 32. Rather than partitioning training into fixed epochs over the tile dataset, we sampled tiles continuously from the train split (Section~\ref{sec:dataset}) and tracked progress by iteration count. We evaluated validation loss every 1,000 batches and applied an early stopping criterion of 50 evaluation intervals: if the best validation loss did not improve over 50 consecutive checkpoints (50,000 batches), training terminated.
 
-Additionally, we implemented a learning rate with warmup and cosine decay. We raised the learning rate from 0 to $1e^{-3}$ over 10,000 iterations to promote gradient stabilization; from this maximum learning rate, we used a cosine decay function to reduce the learning rate to $1e^{-5}$ over 90,000 iterations.
+We used a learning rate schedule with linear warmup and cosine decay. The learning rate ramped from 0 to $1\!\times\!10^{-3}$ over the first 1,000 batches to stabilize early gradients, then decayed via a cosine schedule to $1\!\times\!10^{-5}$ over the subsequent 90,000 iterations and held constant thereafter.
 
 \subsection{Phenotype Extraction}\label{sec:phenotype-extraction}
 
-We developed functions to extract 51 features from each seed pod segmentation map. Features belonged to one of three categories: absolute, ratio, or color.
+We developed functions to extract 51 features from each seed pod segmentation map, grouped into three categories: absolute, ratio, or color.
 
 \subsubsection{Absolute Features}
 
-We calculated seven absolute features from each segmentation map: wing area and perimeter, envelope area and perimeter, seed area and perimeter, and seed count. Areas for each tissue were calculated by taking the sum of all pixels belonging to each class, and perimeters were calculated using the Scikit-Image Python package \cite{scikit-image}. To convert these measurements into $cm^2$, we divided them by the squared dots per inch (DPI) of the image, which was 600, and multiplied by a conversion factor of 6.4516 $cm^2/in$.
+We calculated seven absolute features from each segmentation map: wing area and perimeter, envelope area and perimeter, seed area and perimeter, and seed count. Areas for each tissue were calculated summing the pixels assigned to that class. Perimeters were calculated using the Scikit-Image~\cite{scikit-image} on nested binary masks. Wing perimeter was calculated from the union of wing, envelope, and seed pixels, envelope perimeter was calculated from the union of envelope and seed pixels, and seed perimeter was calculated on the see mask alone. Pixel counts were converted to physical area by dividing DPI$^2$ ($600^2=360,000$) and multiplying by 6.4516 cm$^2$/in$^2$.
 
-In addition to measuring area and perimeter features, we utilized the watershed algorithm to count the number of seeds in each segmented image. First, we separated the seed channel from the rest of the segmentation map to create a binarized seed mask. Then, we calculated the Euclidean distance from each seed pixel to the closest non-seed pixel. We applied a threshold to this distance map, setting any pixel that was less than 60\% of the maximum distance value in the map to 0. This process produced a watershed map, and we used the OpenCV Python package \cite{opencv_library} to label all unique components of the image, returning a seed count. The watershed process is visualized in Figure \ref{watershedding}.
+In addition to measuring area and perimeter features, we utilized the watershed algorithm to count the number of seeds in each segmented image. First, we isolated the seed channel and applied a morphological opening to suppress noise. Then, we calculated the Euclidean distance from each seed pixel to the nearest non-seed pixel. We applied a threshold to this distance map, setting any pixel that was less than 60\% of the maximum distance value in the map to 0. The thresholded foreground was labeled into connected components and passed as markers to the OpenCV~\cite{opencv_library} watershed algorithm, which returned a per-seed segmentation; seed count is defined as the number of unique markers in the map. The watershed process is visualized in Figure \ref{watershedding}.
 
 \begin{figure}[!ht]
     \center
@@ -160,30 +152,45 @@ In addition to measuring area and perimeter features, we utilized the watershed 
 \end{figure}
 
 \subsubsection{Ratio Features}
+We calculated 18 ratio features from the segmented seed pod masks, with six to-total ratios and twelve between-tissue ratios, evenly split between area and perimeter based variants. The six to-total ratios divide each tissue's area or perimeter by the total area or perimeter, yielding wing-to-total, envelope-to-total, and seed-to-total ratios for both measurement types.
 
-We calculated 12 ratio features from the segmented seed pod masks, including six area and perimeter-based features each. First, we calculated the ratio of each tissue’s area to the total segmentation area, which we found by summing existing wing, envelope, and seed pixels. We then divided the sum of each tissue’s surface pixels by the total number of pixels to achieve three ratios: wing-to-total area, envelope-to-total area, and seed-to-total area.
-
-After calculating ratios based on total areas, we calculated ratios of areas between each surface. Using the sums of pixels for each tissue’s areas, we calculated the seed-to-envelope, envelope-to-wing, and seed-to-wing ratios by dividing the first tissue measurements by the second.
-
-We used a similar process to calculate perimeter-based ratios. First, we calculated the ratio of each tissue to the total perimeter using the same method described for area ratio calculation. Additionally, three perimeter ratios between tissues were calculated: seed-to-envelope, envelope-to-wing, and seed-to-wing.
+The 12 between-tissue ratios cover all pairs of distinct tissues for both area and perimeter. These include ratios into seed (envelope/seed, wing/seed), into envelope (wing/envelope, seed/envelope), and into wing (seed/wing, envelope/wing), computed for both measurement types. Reciprocal ratios are retained (e.g., seed/envelope and envelope/seed) so that downstream analysis is not restricted.
 
 \subsubsection{Color Features}
+We extracted nine color features from each tissue: red, green, blue (RGB); hue, saturation, brightness (HSV); and lightness, $a^*$ (green-red), and $b^*$ (blue-yellow) from CIELAB. We converted each input image into all three colore spaces using OpenCV~\cite{opencv_library}. We then created a tensor of these features with size $\texttt{height}\times \texttt{width}\times9$. We used the segmentation masks to subset this tensor by tissue, yielding three sub-tensors covering wing, envelope, and seed features separately.
 
-We extracted nine color-based features from each tissue class for seed pod input images: red, green, blue (rgb); hue, saturation, brightness (hsv); and lightness, red-green, and blue-yellow (laB). First, we used the OpenCV Python package \cite{opencv_library} to extract the rgb, hsv, and laB color spaces from each input image. We then created a tensor of these features with size height x width x 9. We used the segmentation masks produced by the model to subset this tensor by surface; we divided the feature tensor into three sub-tensors which only included wing, envelope, and seed color features separately.
-
-After separating our color features by surface, we aggregated each feature across its spatial dimensions, taking the mean for all nine features and all three surfaces. This process produced three nine-dimensional vectors consisting of the color variables for each surface, yielding 27 features in total.
-
-\subsubsection{Seed Watershed}
+We aggregated each color channel across spatial dimensions by taking the mean over relevant tissue's pixels, producing a nine-dimensional color vector per tissue. Across the three tissues, this yielded 27 features in total.
 
 \section{Segmentation Architecture Benchmarking}\label{sec:benchmark}
+To ensure that our pipeline extracts the most accurate downstream phenotypes possible, it is necessary to find the most performant pod segmentation architecture. We will test six architectures across three classes: CNN, transformer models, and foundation models. 
+
+We will compare two CNN architectures to the baseline U-Net: nnU-Net and DeepLabV3+. [sentence about why each architecture is selected]
+
+We will select SegFormer and Mask2Former as examplar transformer architectures for benchmarking. [sentence about why each is selected]
+
+We will evaluate SAM 2 and MedSAM as candidate foundation models for benchmarking. [sentence about why each is selected]
+
+We will train each architecture with and without our boundary-weighted 
 
 \section{Predictive Expression Networks}\label{sec:pen}
+To explore the relationships between measured phenotypes, we produce PENs using iRF-LOOP \cite{cliff2019high}. Given an input set of extracted phenotypes for each pod, iRF-LOOP uses iterative random forest to iteratively predict a single held out phenotype from all others. Iterative random forest modifies the random forest's feature selection probability by its importance value, examples of which include gini index or node impurity. This process is repeated by holding out each phenotype sequentially, with the entire model output yielding the importance
+
+Using the iRF-LOOP output, we can construct predictive expression networks to examine the interactions between phenotypes. PENs take the form of a directed graph, where nodes represent phenotypes and edges represent the predictive relationship between phenotypes. Using the raw iRF-LOOP output produces a dense network with all phenotypes connected to all others; however, we induce sparsity and highlight only strong predictive relationships by thresholding the graph based on edge weight. We threshold at 3 levels: [level 1], [level 2], and [level 3]. PEN outputs allow us to perform an exploratory analysis of relationships between phenotypes, while also providing an additional layer for multiplex exploration tools.
 
 \section{Genome-Wide Association Study}\label{sec:gwas}
+After measuring seed pod phenotypes and their relationships on a population scale, we perform a genome-wide association study (GWAS) to find significant relationships between phenotypes and pennycress loci. [how does gwas work]. GWAS yields a list of statistically significant relationships between phenotypes and single nucleotide polymorphisms (SNPs). In our case, with many phenotypes of interest, we run GWAS for each phenotype, gathering all loci with a significant relationship to at least one phenotype at a threshold of [threshold]. 
+
+After finding significant loci, we then perform SNP-to-gene assignment to determine which genes account for the phenotypic behavior. [snp to gene assignment]. 
+
+Finally, to limit our exploration to genes that can be controlled during through gene editing during breeding studies, we calculate both broad-sense and narrow-sense heritability. We filter our seed set with a heritability threshold of [threshold]. This process yields a set of seed genes that are both heritable and significantly related to pod phenotypes, providing a basis for module derivation. 
 
 \section{MENTOR Module Derivation}\label{sec:mentor}
+Using our set of seed genes as input, we apply \textsc{Mentor} to derive functionally related modules of pennycress genes. \textsc{Mentor} is a multi-step framework for deriving functionally related modules given a multiplex network and seed genes as input. We use an \textit{Arabidopsis thaliana} multiplex, as the species is closely related to pennycress and has a fully sequenced genome.
+
+Starting from the seed genes derived in Section~\ref{sec:gwas}, we use random walk with restart (RWR) as a diffusion method to measure the probability of traveling to each gene in the multiplex from the seed set. 
 
 \section{MENTOR-IA Interpretation}\label{sec:mentor-ia}
+After deriving a set of modules with \textsc{Mentor}, we explore the mechanisms in these modules with the assistance of \textsc{Mentor-IA}. \textsc{Mentor-IA} 
 
 \section{Results}
 
