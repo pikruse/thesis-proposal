@@ -23,7 +23,7 @@ This work pursues a three-stage research trajectory. First, we train and benchma
 
     \item\label{obj:pop-scale} \textbf{Characterize population-scale phenotypic structure of pennycress seed pods.} We applied the baseline model to over 11,000 seed pods across 771 pennycress accessions and extracted over 50 phenotypes per pod, assessing biological validity through trait distributions and known wing-seed associations. Building on these results, we constructed predictive expression networks (PENs) over the extracted phenotypes using iRF-LOOP \cite{cliff2019high}, identifying mutually predictive traits across the population.
 
-    \item\label{obj:benchmark} \textbf{Identify the best-performing segmentation architecture for pennycress.} We propose to benchmark a panel of segmentation architectures: nnU-Net \cite{}, DeepLabV3+ \cite{}, SegFormer \cite{}, Mask2Former \cite{}, SAM 2 \cite{ravi2024sam}, and MedSAM \cite{}. Each architecture will be evaluated with and without fine-tuning, and the best-performing model will be adopted for downstream phenotyping. If a meaningfully improved phenotype set results, the downstream analyses (Objective~\ref{obj:gwas} and~\ref{obj:interpret}) will be re-run on that set. If the U-Net baseline remains the best, the existing phenotype set will stand.
+    \item\label{obj:benchmark} \textbf{Identify the best-performing segmentation architecture for pennycress.} We propose to benchmark a panel of segmentation architectures: nnU-Net \cite{isensee2021nnu}, DeepLabV3+ \cite{chen2018encoder}, SegFormer \cite{xie2021segformer}, Mask2Former \cite{cheng2021mask2former}, SAM 2 \cite{ravi2024sam}, and MedSAM 2 \cite{zhu2024medsam2}. Each architecture will be evaluated with and without fine-tuning, and the best-performing model will be adopted for downstream phenotyping. If a meaningfully improved phenotype set results, the downstream analyses (Objective~\ref{obj:gwas} and~\ref{obj:interpret}) will be re-run on that set. If the U-Net baseline remains the best, the existing phenotype set will stand.
 
     \item\label{obj:gwas} \textbf{Identify candidate genes from phenotype-driven genome-wide associations.} We ran a genome-wide association study (GWAS) to map phenotypes to genomic regions, and mapped significant SNP loci to their nearest annotated genes to construct a candidate gene set.
 
@@ -164,11 +164,11 @@ We aggregated each color channel across spatial dimensions by taking the mean ov
 \section{Segmentation Architecture Benchmarking}\label{sec:benchmark}
 To ensure that our pipeline extracts the most accurate downstream phenotypes possible, it is necessary to find the most performant pod segmentation architecture. We will test six architectures across three classes: CNN, transformer models, and foundation models. 
 
-We will compare two CNN architectures to the baseline U-Net: nnU-Net and DeepLabV3+. [sentence about why each architecture is selected]
+We will compare two CNN architectures to the baseline U-Net: nnU-Net \cite{isensee2021nnu} and DeepLabV3+ \cite{chen2018encoder}. nnU-Net is an approach which configures a plain U-Net systematically through a three-stage pipeline. The selection process includes fixed parameters, which generalize across many datasets; rule-based parameters, which are determined by unique dataset and pipeline characteristics; and empirical parameters, which are learned through trial and error. Because nnU-Net derives its own patching, batch size, and augmentation scheme through fingerprinting and rule-based selection, the benchmarking for this architecture does not include our custom tile generation scheme (Section~\ref{sec:tile-gen}). DeepLabV3+ combines an encoder-decoder architecture with atrous depthwise separable convolutions, balancing the use of long-range spatial context with fine-grained boundary detection. 
 
-We will select SegFormer and Mask2Former as examplar transformer architectures for benchmarking. [sentence about why each is selected]
+We will select SegFormer \cite{xie2021segformer} and Mask2Former \cite{cheng2021mask2former} as exemplar transformer architectures for benchmarking. SegFormer uses a hierarchical transformer encoder backbone which generates both high-resolution, coarse features and low-resolution, fine-features, and a lightweight MLP decoder to fuse these features for the final semantic segmentation task. Mask2Former also uses a transformer backbone, 
 
-We will evaluate SAM 2 and MedSAM as candidate foundation models for benchmarking. [sentence about why each is selected]
+We will evaluate SAM 2 \cite{ravi2024sam} and MedSAM 2 \cite{zhu2024medsam2} as candidate foundation models for benchmarking. [sentence about why each is selected]
 
 We will train each architecture with and without our boundary-weighted 
 
@@ -187,10 +187,12 @@ Finally, to limit our exploration to genes that can be controlled during through
 \section{MENTOR Module Derivation}\label{sec:mentor}
 Using our set of seed genes as input, we apply \textsc{Mentor} to derive functionally related modules of pennycress genes. \textsc{Mentor} is a multi-step framework for deriving functionally related modules given a multiplex network and seed genes as input. We use an \textit{Arabidopsis thaliana} multiplex, as the species is closely related to pennycress and has a fully sequenced genome.
 
-Starting from the seed genes derived in Section~\ref{sec:gwas}, we use random walk with restart (RWR) as a diffusion method to measure the probability of traveling to each gene in the multiplex from the seed set. 
+Starting from the seed genes derived in Section~\ref{sec:gwas}, we use random walk with restart (RWR) as a diffusion method to measure the probability of traveling to each gene in the multiplex from the seed set. This produces a distance matrix, which represents the pairwise traversal probabilities between nodes in matrix form. These traversal probabilities are then converted to pairwise dissimilaries between nodes. With the resulting dissimilarities, we create a dendrogram using agglomerative clustering with complete linkage as our module distance measure. This dendrogram is then thresholded to examine modules of a certain size. To make exploration tractable, we choose to only focus on modules that contain genes from our seed set.
 
 \section{MENTOR-IA Interpretation}\label{sec:mentor-ia}
-After deriving a set of modules with \textsc{Mentor}, we explore the mechanisms in these modules with the assistance of \textsc{Mentor-IA}. \textsc{Mentor-IA} 
+After deriving a set of modules with \textsc{Mentor}, we explore the mechanisms in these modules with the assistance of \textsc{Mentor-IA}. \textsc{Mentor-IA} is an LLM-based agent framework which uses specialized agents to aid in mechanistic interpretation. These agents include a mygene interpreter, which utilizes gene summaries, GO terms, and pathway annotations to explore each gene's role individually; a literature agent, which explores mechanistic connections in related literature via PubMed; an enrichment agent, which determines whether genes over-represent known pathways in GO, KEGG, or Reactome; a network agent, which uses subgraph evidence to refine the interpretation; and a meta aggregator, which synthesizes evidence to produce a coherent mechanistic summary.
+
+Using the evidence provided by \textsc{Mentor-IA} as a basis for exploration, we examine pennycress literature to validate and verify the proposed mechanistic hypotheses. This provides a full picture of the relationship between the phenotypes measured with our phenotyping framework and the mechanistic underpinnings of these traits.
 
 \section{Results}
 
@@ -238,7 +240,7 @@ We performed a population-scale study by extracting phenotypes from over 11,000 
 
 We used the feature extraction methods described in Section \ref{feature_ex} to create an open-source dataset of 51 phenotypes for all 11,000 seed pods. In Figure \ref{area_dist}, we examine the distributions of three key phenotypes: wing area, envelope area, and seed area. These traits were examined due to their direct relationship to model performance. Each trait was log-normally distributed, but their mean and variance were different. The log-normal distribution of these traits indicates that our U-Net model accurately captured their biological underpinnings, as plant traits typically fall into a log-normal distribution \cite{TRY}.
 
-Additionally, we examined correlations between wing area and seed area and count. The review in \cite{wing-seed-assoc} hypothesizes that larger pods in Brassicaceae correlate positively with the rate of seed filling. Our results corroborate this finding, as wing area was positively correlated with seed area and seed count, with Spearman correlations $r = .51$ and $r = .30$ respectively. Correlation plots are displayed in figure \ref{wing_seed_corr}.
+Additionally, we examined correlations between wing area and seed area and count. The review in \cite{wing-seed-assoc} hypothesizes that larger pods in \textbf{Brassicaceae} correlate positively with the rate of seed filling. Our results corroborate this finding, as wing area was positively correlated with seed area and seed count, with Spearman correlations $r = .51$ and $r = .30$ respectively. Correlation plots are displayed in figure \ref{wing_seed_corr}.
 
 \begin{figure}[!ht]
     \center
