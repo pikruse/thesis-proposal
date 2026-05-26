@@ -1,7 +1,7 @@
 \chapter{A High-Throughput Deep Learning Pipeline for Image-Based Pennycress Phenotyping}\label{ch:pennycress}
 
 \section{Introduction}
-Pennycress (\textit{Thlaspi arvense L.}) is a winter annual in the \textit{Brassicaceae} family that has shown potential as a bioenergy feedstock and cover crop. Realizing this potential requires population-scale studies, which are currently blocked by phenotyping bottlenecks, most notably the manual collection of seed pod traits. Currently, no frameworks exist that enable scalable approaches to collecting detailed seed pod measurements. In this chapter, we introduce a deep-learning pipeline for image-based phenotyping of pennycress, which we apply at population scale and extend through genome-wide association and mechanistic interpretation.
+Pennycress (\textit{Thlaspi arvense L.}) is a winter annual in the \textit{Brassicaceae} family that has shown potential as a bioenergy feedstock and cover crop. Realizing this potential requires population-scale studies, which are currently blocked by phenotyping bottlenecks, most notably the manual collection of seed pod traits. Currently, no frameworks exist that enable scalable approaches to collecting detailed seed pod measurements. In this chapter, we introduce a deep learning pipeline for image-based phenotyping of pennycress, which we apply at population scale and extend through genome-wide association and mechanistic interpretation.
 
 \subsection{Pennycress and Plant Phenotyping}
 Pennycress has a high seed-oil content and non-food fatty-acid profile that support its use in biodiesel production without competing with the food supply. As a cover crop, it grows in the corn-soy fallow window, provides agronomic services including erosion control and nitrogen capture, and integrates into existing rotations. Pennycress is also tractable for breeding due to its short generation time, established transformation protocols, and sequenced reference genome.
@@ -11,7 +11,7 @@ Improving these traits requires breeding pennycress for improved feedstock and c
 In pennycress, however, intensive phenotyping at population scale remains out of reach. Pod-level traits such as wing area, envelope morphology, and seed count per pod are tedious to collect by hand \cite{seed-cnn} and are therefore systematically omitted from population-scale studies, despite their direct relevance to seed yield and pod-shattering resistance \cite{pod_shattering}. 
 
 \subsection{Deep Learning for Image-Based Phenotyping}
-Image-based phenotyping enables measurements at scales and resolutions that are infeasible by hand, from cell-level microscopy to satellite imagery \cite{lagergren2023fewshot}. A single imaging modality can yield many traits simultaneously, allowing researchers to extract complex topological and morphological features that are inaccessible with manual measurement. For pod-level phenotyping, the operative subtask is segmentation: distinguishing wing, envelope, and seed regions within each pod. Classical segmentation approaches require controlled imaging conditions and hand-tuned thresholds, which do not generalize across natural variation in raw scans; deep-learning models operate on raw images directly, learning relevant features end-to-end.
+Image-based phenotyping enables measurements at scales and resolutions that are infeasible by hand, from cell-level microscopy to satellite imagery \cite{lagergren2023fewshot}. A single imaging modality can yield many traits simultaneously, allowing researchers to extract complex topological and morphological features that are inaccessible with manual measurement. For pod-level phenotyping, the operative subtask is segmentation: distinguishing wing, envelope, and seed regions within each pod. Classical segmentation approaches require controlled imaging conditions and hand-tuned thresholds, which do not generalize across natural variation in raw scans; deep learning models operate on raw images directly, learning relevant features end-to-end.
 
 Deep learning models have achieved state-of-the-art performance in computer vision tasks ranging from image classification to segmentation \cite{krizhevsky2012imagenet, he2016deep}. In the plant phenotyping domain, deep learning models have been applied to disease detection \cite{}, organ counting \cite{}, and seed phenotyping \cite{}. Despite progress in adjacent phenotyping tasks, automated pod-level phenotyping in pennycress has not yet been addressed, leaving wing, envelope, and seed traits systematically unmeasured. In this chapter, we develop a deep learning pipeline for pennycress seed pod segmentation, enabling intensive and extensive phenotyping. We apply this pipeline at population scale and extend it through genome-wide association and mechanistic interpretation.
 
@@ -35,7 +35,7 @@ This section details the methods which underpin our phenotyping pipeline, spanni
 
 \subsection{Dataset}\label{sec:pennycress-dataset}
 \subsubsection{Data Collection}
-Our raw data consisted of 661 scanned images of pennycress (Thlaspi arvense L.) seed pods collected from a variety of plantations in the midwest, including those at Western Illinois University (WIU), Illinois State University (ISU), and University of Minnesota (UM). After collecting seed pods, we imaged them using an Epson V39 Perfection scanner. Each scanned image contains multiple seed pods due to their size. Figure \ref{pennycress_original} displays an example raw image scan. The 661 scans were drawn from a population of 771 pennycress accessions, with each scan containing approximately 15 seed pods, yielding a dataset of approximately 11,000 individual pods after separation (Section~\ref{sec:preprocessing}). A subset of 245 of these seed pods were hand-annotated for supervised training and evaluation (Section~\ref{sec:annotation}), while the full set was used for population-scale inference following model training.
+Our raw data consisted of 661 scanned images of pennycress (Thlaspi arvense L.) seed pods collected from a variety of plantations in the midwest, including those at Western Illinois University (WIU), Illinois State University (ISU), and University of Minnesota (UM). After collecting seed pods, we imaged them using an Epson V39 Perfection scanner. Each scanned image contains multiple seed pods due to their size. Figure \ref{pennycress_original} displays an example raw image scan. The 661 scans were drawn from a population of 771 pennycress accessions, with each scan containing approximately 15 seed pods, yielding a dataset of approximately 11,000 individual pods after separation (Section~\ref{sec:preprocessing}). A subset of 345 of these seed pods were hand-annotated for supervised training and evaluation (Section~\ref{sec:annotation}), while the full set was used for population-scale inference following model training.
 
 \begin{figure}[!ht]
     \center
@@ -128,7 +128,7 @@ We then multiply the weight map pixelwise with cross-entropy loss and average ov
 \noindent where $t$ is the ground truth segmentation map and $p(\theta)$ is the predicted segmentation map as a function of U-Net parameters.
 
 \subsubsection{Model Training}
-We trained the U-Net for up to 150,000 mini-batch updates using the Adam optimizer with a batch size of 32. Rather than partitioning training into fixed epochs over the tile dataset, we sampled tiles continuously from the train split (Section~\ref{sec:dataset}) and tracked progress by iteration count. We evaluated validation loss every 1,000 batches and applied an early stopping criterion of 50 evaluation intervals: if the best validation loss did not improve over 50 consecutive checkpoints (50,000 batches), training terminated.
+We trained the U-Net for up to 150,000 mini-batch updates using the Adam optimizer with a batch size of 32. Rather than partitioning training into fixed epochs over the tile dataset, we sampled tiles continuously from the train split (Section~\ref{sec:pennycress-dataset}) and tracked progress by iteration count. We evaluated validation loss every 1,000 batches and applied an early stopping criterion of 50 evaluation intervals: if the best validation loss did not improve over 50 consecutive checkpoints (50,000 batches), training terminated.
 
 We used a learning rate schedule with linear warmup and cosine decay. The learning rate ramped from 0 to $1\!\times\!10^{-3}$ over the first 1,000 batches to stabilize early gradients, then decayed via a cosine schedule to $1\!\times\!10^{-5}$ over the subsequent 90,000 iterations and held constant thereafter.
 
@@ -138,7 +138,7 @@ We developed functions to extract 51 features from each seed pod segmentation ma
 
 \subsubsection{Absolute Features}
 
-We calculated seven absolute features from each segmentation map: wing area and perimeter, envelope area and perimeter, seed area and perimeter, and seed count. Areas for each tissue were calculated summing the pixels assigned to that class. Perimeters were calculated using the Scikit-Image~\cite{scikit-image} on nested binary masks. Wing perimeter was calculated from the union of wing, envelope, and seed pixels, envelope perimeter was calculated from the union of envelope and seed pixels, and seed perimeter was calculated on the see mask alone. Pixel counts were converted to physical area by dividing DPI$^2$ ($600^2=360,000$) and multiplying by 6.4516 cm$^2$/in$^2$.
+We calculated seven absolute features from each segmentation map: wing area and perimeter, envelope area and perimeter, seed area and perimeter, and seed count. Areas for each tissue were calculated summing the pixels assigned to that class. Perimeters were calculated using the Scikit-Image~\cite{scikit-image} on nested binary masks. Wing perimeter was calculated from the union of wing, envelope, and seed pixels, envelope perimeter was calculated from the union of envelope and seed pixels, and seed perimeter was calculated on the seed mask alone. Pixel counts were converted to physical area by dividing DPI$^2$ ($600^2=360,000$) and multiplying by 6.4516 cm$^2$/in$^2$.
 
 In addition to measuring area and perimeter features, we utilized the watershed algorithm to count the number of seeds in each segmented image. First, we isolated the seed channel and applied a morphological opening to suppress noise. Then, we calculated the Euclidean distance from each seed pixel to the nearest non-seed pixel. We applied a threshold to this distance map, setting any pixel that was less than 60\% of the maximum distance value in the map to 0. The thresholded foreground was labeled into connected components and passed as markers to the OpenCV~\cite{opencv_library} watershed algorithm, which returned a per-seed segmentation; seed count is defined as the number of unique markers in the map. The watershed process is visualized in Figure \ref{watershedding}.
 
@@ -155,7 +155,7 @@ We calculated 18 ratio features from the segmented seed pod masks, with six to-t
 The 12 between-tissue ratios cover all pairs of distinct tissues for both area and perimeter. These include ratios into seed (envelope/seed, wing/seed), into envelope (wing/envelope, seed/envelope), and into wing (seed/wing, envelope/wing), computed for both measurement types. Reciprocal ratios are retained (e.g., seed/envelope and envelope/seed) so that downstream analysis is not restricted.
 
 \subsubsection{Color Features}
-We extracted nine color features from each tissue: red, green, blue (RGB); hue, saturation, brightness (HSV); and lightness, $a^*$ (green-red), and $b^*$ (blue-yellow) from CIELAB. We converted each input image into all three colore spaces using OpenCV~\cite{opencv_library}. We then created a tensor of these features with size $\texttt{height}\times \texttt{width}\times9$. We used the segmentation masks to subset this tensor by tissue, yielding three sub-tensors covering wing, envelope, and seed features separately.
+We extracted nine color features from each tissue: red, green, blue (RGB); hue, saturation, brightness (HSV); and lightness, $a^*$ (green-red), and $b^*$ (blue-yellow) from CIELAB. We converted each input image into all three color spaces using OpenCV~\cite{opencv_library}. We then created a tensor of these features with size $\texttt{height}\times \texttt{width}\times9$. We used the segmentation masks to subset this tensor by tissue, yielding three sub-tensors covering wing, envelope, and seed features separately.
 
 We aggregated each color channel across spatial dimensions by taking the mean over relevant tissue's pixels, producing a nine-dimensional color vector per tissue. Across the three tissues, this yielded 27 features in total.
 
@@ -186,15 +186,15 @@ H^2 = \sigma^2_G / (\sigma^2_G + \sigma^2_E),
 where $\sigma^2_G$ and $\sigma^2_E$ are genotypic and residual variance components. Phenotypes with $H^2 <0.05$ are removed from downstream association analyses as lacking sufficient heritable signal. We additionally restrict our analysis to phenotypes derived from the U-Net segmentation pipeline described in Section~\ref{sec:unet}, excluding manually measured traits to maintain methodological consistency.
 
 \subsection{Association Testing}
-GWAS tests each variant across the genome for statistical association with a phenotype, typically using a linear mixed model that includes a kinship matrix and population structure covariates to control for confounding from relatedness and stratification. Each SNP-phenotype test produces a p-value, and SNPs exceeding a genome-wide significance threshold are reported as significant associations. We perform association testing using the GAPIT \cite{wang2021gapit} R package. Variants are filtered to a minor allele frequency (MAF) of $\geq 0.03$ prior to testing. We run GWAS independently per phenotype and a SNP is retained as significant if it passes a Benjamini-Hochberg false discovery rate threshold of $q \leq 0.2$ under at least one of the four methods. The permissive cutoff is justified, as we use GRIN \cite{sullivan2024grin} to filter false positives under the relaxed threshold by examining network connectivity. 
+GWAS tests each variant across the genome for statistical association with a phenotype, typically using a linear mixed model that includes a kinship matrix and population structure covariates to control for confounding from relatedness and stratification. Each SNP-phenotype test produces a p-value, and SNPs exceeding a genome-wide significance threshold are reported as significant associations. We fit four mixed-model and Bayesian variants implemented  in GAPIT \cite{wang2021gapit}: MLM, MMLM, FarmCPU, and BLINK. Variants are filtered to a minor allele frequency (MAF) of $\geq 0.03$ prior to testing. We run GWAS independently per phenotype and a SNP is retained as significant if it passes a Benjamini-Hochberg false discovery rate threshold of $q \leq 0.2$ under at least one of the four methods. The permissive cutoff is justified, as we use GRIN \cite{sullivan2024grin} to filter false positives under the relaxed threshold by examining network connectivity. 
 
 \subsection{SNP-to-Gene Assignment}
 After finding significant loci, we map SNPs to candidate genes using a two-pronged approach. For each significant SNP, we first fit a local linkage disequilibrium (LD) decay curve and define a data-driven window around the SNP based on fitted decay distance. We then identify all genes whose coordinates fall within this window on the pennycress TAV2 reference genome. To capture associations with genes that lie outside the LD window but in close physical proximity, we additionally include the nearest annotated gene by physical distance. SNPs in regions where LD decay could not be reliably fit are excluded from assignment. Because functional annotation of the pennycress genome is limited, we annotate each assigned pennycress gene by its best BLAST-hit Arabidopsis ortholog from TAIR \cite{garcia2002tair} to enable downstream biological interpretation.
 
 \subsection{Seed Gene Set Construction}
-We aggregate gene assignments across both environments by taking the union of genes mapped from significant SNPs, regardless of which environment or which GWAS method produced the original association. After applying the heritability filter ($H^2 > 0.05$) and restricting to phenotypes derived from the U-Net segmentation pipeline, four pod related phenotypes (\texttt{pod\_env\_b\_2}, \texttt{pod\_env\_to\_seed\_area}, \texttt{pod\_wing\_area}, and \texttt{pod\_wing\_to\_seed\_area}) yielded significant GWAS hits, mapping to 29 unique SNPs and 69 pennycress genes, 64 of which had annotated Arabidopsis TAIR orthologs. We note that these four phenotypes are highly correlated, as they are geometric ratios computed from a common set of pod measurements, and therefor do not represent four biologically independent signals. This gene set serves as the seed input to the \textsc{Mentor} module derivation described in Section~\ref{sec:mentor}.
+We aggregate gene assignments across both environments by taking the union of genes mapped from significant SNPs, regardless of which environment or which GWAS method produced the original association. After applying the heritability filter ($H^2 > 0.05$) and restricting to phenotypes derived from the U-Net segmentation pipeline, four pod related phenotypes (\texttt{pod\_env\_b\_2}, \texttt{pod\_env\_to\_seed\_area}, \texttt{pod\_wing\_area}, and \texttt{pod\_wing\_to\_seed\_area}) yielded significant GWAS hits, mapping to 29 unique SNPs and 69 pennycress genes, 64 of which had annotated Arabidopsis TAIR orthologs. We note that these four phenotypes are highly correlated, as they are geometric ratios computed from a common set of pod measurements, and therefore do not represent four biologically independent signals. This gene set serves as the seed input to the \textsc{Mentor} module derivation described in Section~\ref{sec:mentor}.
 
-To expand the candidate gene set, we additionally included the direct neighbors of each surviving phenotype in the PPN (Section~\ref{sec:pen}) and took the union of their GWAS-derived gene assignments. This leveragaes the assumption that mutually predictive phenotypes share some underlying genetic architecture. The resulting expanded seed gene set is passed to GRIN~(Section~\ref{sec:grin}) for network-based refinement.
+To expand the candidate gene set, we additionally included the direct neighbors of each surviving phenotype in the PPN (Section~\ref{sec:pen}) and took the union of their GWAS-derived gene assignments. This leverages the assumption that mutually predictive phenotypes share some underlying genetic architecture. The resulting expanded seed gene set is passed to GRIN~(Section~\ref{sec:grin}) for network-based refinement.
 
 \section{MENTOR Module Derivation}\label{sec:mentor}
 \subsection{GRIN Filtering}\label{sec:grin}
@@ -203,7 +203,7 @@ Before using our GWAS-derived gene set as input to \textsc{Mentor} for module co
 \subsection{Module Construction}
 Using our filtered set of seed genes as input, we apply \textsc{Mentor} to derive functionally related modules of pennycress genes. \textsc{Mentor} is a multi-step framework for deriving functionally related modules given a multiplex network and seed genes as input. We use an \textit{Arabidopsis thaliana} multiplex, as the species is closely related to pennycress and has a fully sequenced genome.
 
-Starting from the seed genes derived in Section~\ref{sec:gwas}, we use random walk with restart (RWR) as a diffusion method to measure the probability of traveling to each gene in the multiplex from the seed set. This produces a distance matrix, which represents the pairwise traversal probabilities between nodes in matrix form. These traversal probabilities are then converted to pairwise dissimilaries between nodes. With the resulting dissimilarities, we create a dendrogram using agglomerative clustering with complete linkage as our module distance measure. This dendrogram is then thresholded to examine modules of a certain size. To make exploration tractable, we choose to only focus on modules that contain genes from our seed set.
+Starting from the seed genes derived in Section~\ref{sec:gwas}, we use random walk with restart (RWR) as a diffusion method to measure the probability of traveling to each gene in the multiplex from the seed set. This produces a distance matrix, which represents the pairwise traversal probabilities between nodes in matrix form. These traversal probabilities are then converted to dissimilarities. With the resulting dissimilarities, we create a dendrogram using agglomerative clustering with complete linkage as our module distance measure. This dendrogram is then thresholded to examine modules of a certain size. To make exploration tractable, we choose to only focus on modules that contain genes from our seed set.
 
 \section{MENTOR-IA Interpretation}\label{sec:mentor-ia}
 After deriving a set of modules with \textsc{Mentor}, we explore the mechanisms in these modules with the assistance of \textsc{Mentor-IA}. \textsc{Mentor-IA} is an LLM-based agent framework which uses specialized agents to aid in mechanistic interpretation. These agents include a mygene interpreter, which utilizes gene summaries, GO terms, and pathway annotations to explore each gene's role individually; a literature agent, which explores mechanistic connections in related literature via PubMed; an enrichment agent, which determines whether genes over-represent known pathways in GO, KEGG, or Reactome; a network agent, which uses subgraph evidence to refine the interpretation; and a meta aggregator, which synthesizes evidence to produce a coherent mechanistic summary.
@@ -222,7 +222,7 @@ Jaccard Index, also known as intersection over union, was used to evaluate the a
 
 The metric has a range between 0 and 1, with a value of 1 indicating perfectly similar segmentations, while a value of 0 indicates completely dissimilar segmentations.
 
-\subsection{U-Net Results}
+\subsection{Benchmarking Results}
 
 \begin{table}
 \begin{center}
@@ -238,6 +238,34 @@ The metric has a range between 0 and 1, with a value of 1 indicating perfectly s
  \hline
 \end{tabular}
 \caption{U-Net Segmentation Results}\label{results_table}
+\end{center}
+\end{table}
+
+\begin{table}
+\begin{center}
+\begin{tabular}{||c | c | c | c||}
+ \hline
+\textbf{Model} & \textbf{Wing} & \textbf{Envelope} & \textbf{Seed}\\ [2ex] 
+ \hline\hline
+ U-Net & 95.91\% & 94.68\% & 78.35\% \\ [2ex]
+ \hline
+ Boundary Down-Weighted Loss & \textbf{96.11\%} & 95.00 \% & 78.32\% \\ [2ex]
+ \hline
+ Boundary Up-Weighted Loss & 95.89\% & 94.93\% & 78.63\% \\ [2ex]
+ \hline
+ nnU-Net & 95.09\% & 92.30\% & 72.48\% \\ [2ex]
+ \hline
+ DeepLabV3+ & & & \\ [2ex]
+ \hline 
+ SegFormer & & & \\ [2ex]
+ \hline
+ MaskFormer & & &  \\ [2ex]
+ \hline
+ SAM 3 & & & \\ [2ex]
+ \hline
+ 
+\end{tabular}
+\caption{Segmentation Benchmark Results}\label{tbl:pennycress-results}
 \end{center}
 \end{table}
 
