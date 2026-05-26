@@ -30,6 +30,8 @@ This work pursues a three-stage research trajectory. First, we train and benchma
     \item\label{obj:interpret} \textbf{Derive and mechanistically interpret gene modules from the candidate gene set.} We applied \textsc{Mentor} \cite{mentor} to the candidate seed gene set to derive functionally related gene modules, and we conducted a preliminary, proof-of-concept mechanistic interpretation of these modules using \textsc{Mentor-IA} \cite{mentor-ia}.
 \end{enumerate}
 
+\section{Background and Related Work}\label{sec:pc-background}
+
 \section{Methods}
 This section details the methods which underpin our phenotyping pipeline, spanning dataset construction, image segmentation, population-scale phenotype extraction, phenotype-to-genotype mapping, and module-level mechanistic interpretation. Section~\ref{sec:pennycress-dataset} covers dataset collection, annotation, and preprocessing. Section~\ref{sec:unet} presents the U-Net segmentation backbone and training procedure. Section~\ref{sec:phenotype-extraction} details the phenotype extraction stage. Section~\ref{sec:benchmark} outlines the models and criterion for benchmarking. Sections~\ref{sec:pen}-~\ref{sec:mentor-ia} cover the downstream biological pipeline: PEN construction, phenotype-to-genotype mapping, module derivation with \textsc{Mentor}, and mechanistic interpretation with \textsc{Mentor-IA}.
 
@@ -223,24 +225,6 @@ Jaccard Index, also known as intersection over union, was used to evaluate the a
 The metric has a range between 0 and 1, with a value of 1 indicating perfectly similar segmentations, while a value of 0 indicates completely dissimilar segmentations.
 
 \subsection{Benchmarking Results}
-
-\begin{table}
-\begin{center}
-\begin{tabular}{||c | c | c | c||}
- \hline
-\textbf{Tissue} & \textbf{Vanilla U-Net} & \textbf{Boundary Down-Weighted Loss} & \textbf{Boundary Up-Weighted Loss}\\ [2ex] 
- \hline\hline
- \textit{Wing} & 95.91\% & \textbf{96.11\%} & 95.89\% \\ [2ex]
- \hline
-\textit{Envelope} & 94.68\% & \textbf{95.00\%} & 94.93\% \\ [2ex]
- \hline
- \textit{Seed} & 78.35\% & 78.32 \% & \textbf{78.63\%} \\ [2ex]
- \hline
-\end{tabular}
-\caption{U-Net Segmentation Results}\label{results_table}
-\end{center}
-\end{table}
-
 \begin{table}
 \begin{center}
 \begin{tabular}{||c | c | c | c||}
@@ -255,17 +239,17 @@ The metric has a range between 0 and 1, with a value of 1 indicating perfectly s
  \hline
  nnU-Net & 95.09\% & 92.30\% & 72.48\% \\ [2ex]
  \hline
- DeepLabV3+ & & & \\ [2ex]
+ DeepLabV3+ & N/A & N/A & N/A\\ [2ex]
  \hline 
- SegFormer & & & \\ [2ex]
+ SegFormer & N/A & N/A & N/A \\ [2ex]
  \hline
- MaskFormer & & &  \\ [2ex]
+ MaskFormer & N/A & N/A & N/A \\ [2ex]
  \hline
- SAM 3 & & & \\ [2ex]
+ SAM 3 & N/A & N/A & N/A \\ [2ex]
  \hline
  
 \end{tabular}
-\caption{Segmentation Benchmark Results}\label{tbl:pennycress-results}
+\caption{Segmentation Benchmark Results (mIoU). Sections labeled \textit{N/A} are benchmark architectures which have not yet been tested.}\label{tbl:pennycress-results}
 \end{center}
 \end{table}
 
@@ -278,13 +262,13 @@ We evaluated the U-Net's segmentation performance on 5 raw images containing 61 
     \label{segmentations}
 \end{figure}
 
-\subsection{Population-Scale Results}
+\subsection{Population-Scale Phenotyping}
 
-We performed a population-scale study by extracting phenotypes from over 11,000 seed pods across 771 genotypes. Each image contained approximately 15 seed pods and took around 2 minutes to segment with the model. Images took approximately 1.5 hours to segment by hand, meaning that model inference was 30 times faster than hand segmentation.
+Having established a baseline segmentation model (Objective~\ref{obj:baseline}), we applied it at population scale to characterize phenotypic structure across the pennycress accession panel. We measured phenotypes from over 11,000 seed pods across 761 genotypes. Each image contained approximately 15 seed pods and took around 2 minutes to segment with the model. Images took approximately 1.5 hours to segment by hand, meaning that model inference was 30 times faster than hand segmentation.
 
-We used the feature extraction methods described in Section \ref{feature_ex} to create an open-source dataset of 51 phenotypes for all 11,000 seed pods. In Figure \ref{area_dist}, we examine the distributions of three key phenotypes: wing area, envelope area, and seed area. These traits were examined due to their direct relationship to model performance. Each trait was log-normally distributed, but their mean and variance were different. The log-normal distribution of these traits indicates that our U-Net model accurately captured their biological underpinnings, as plant traits typically fall into a log-normal distribution \cite{TRY}.
+We used the feature extraction methods described in Section \ref{feature_ex} to create an open-source dataset of over 50 phenotypes for all 11,000 seed pods. In Figure \ref{area_dist}, we examine the distributions of three key phenotypes: wing area, envelope area, and seed area. These traits were examined due to their direct relationship to model performance. Each trait was log-normally distributed, but their mean and variance were different. The log-normal distribution of these traits indicates that our U-Net model accurately captured their biological underpinnings, as plant traits typically fall into a log-normal distribution \cite{TRY}.
 
-Additionally, we examined correlations between wing area and seed area and count. The review in \cite{wing-seed-assoc} hypothesizes that larger pods in \textbf{Brassicaceae} correlate positively with the rate of seed filling. Our results corroborate this finding, as wing area was positively correlated with seed area and seed count, with Spearman correlations $r = .51$ and $r = .30$ respectively. Correlation plots are displayed in figure \ref{wing_seed_corr}.
+Consistent with the wing-seed regulatory association described in Section~\ref{sec:pc-background}, wing area was positively correlated with seed area and seed count (Spearman $r = 0.51$ and $0.30$, respectively; Figure~\ref{wing_seed_corr}). The resulting per-accession phenotype matrix served two roles: input to iRF-LOOP (Section~\ref{sec:pen}) and the candidate trait pool for heritability filtering and GWAS (Section~\ref{sec:gwas}).
 
 \begin{figure}[!ht]
     \center
@@ -299,6 +283,22 @@ Additionally, we examined correlations between wing area and seed area and count
     \caption{Wing Area vs. Seed Area and Count}
     \label{wing_seed_corr}
 \end{figure}
+
+\subsection{Predictive Phenotype Network Construction}
+
+\subsection{Proposed Architecture Benchmark}
+
+\subsection{Phenotype Curation and Heritability estimation}
+
+\subsection{Genome-Wide Association Testing}
+
+\subsection{SNP-to-Gene Assignment}
+
+\subsection{Seed Gene Set Construction}
+
+\subsection{MENTOR Module Derivation}
+
+\subsection{MENTOR-IA Preliminary Interpretation}
 
 \section{Discussion}
 Our team developed a U-Net model for high-throughput segmentation of pennycress seed pods, and we created an open-source, hand annotated ground truth dataset of 365 seed pod images to use for training data. We performed a population-scale study with the model, extracting over 50 phenotypes from 11,000 seed pods belonging to 761 naturally occurring accessions of pennycress. The U-Net produced over 95\% accurate wing and envelope segmentations and almost 80\% accurate seed segmentations. Additionally, model inference provided a 30x speed increase over manual hand-segmentation.
