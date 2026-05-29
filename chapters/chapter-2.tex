@@ -216,36 +216,47 @@ Using the evidence provided by \textsc{Mentor-IA} as a basis for exploration, we
 
 \subsection{Evaluation Metrics}
 
-Jaccard Index, also known as intersection over union, was used to evaluate the accuracy of model predictions. Given a ground truth pixel-wise segmentation set \textit{A} and a predicted pixel-wise segmentation set \textit{B}, the Jaccard Index is computed with
-
+We used intersection over union (IoU), also known as the Jaccard index, as the primary evaluation metric for this project. Given a ground truth pixel-wise segmentation set \textit{A} and a predicted pixel-wise segmentation set \textit{B} for a single class on a single image, the IoU is defined as:
 \begin{align}\label{iou}
-    J(A,B) &= \frac{|A \cap B|}{|A \cup B|}.
+    \mathrm{IoU}(A,B) &= \frac{|A \cap B|}{|A \cup B|}.
 \end{align}
 
-The metric has a range between 0 and 1, with a value of 1 indicating perfectly similar segmentations, while a value of 0 indicates completely dissimilar segmentations.
+IoU lies in $[0, 1]$, with a value of $1$ indicating identical sets and $0$ indicating disjoint sets. We report class-wise IoU for each tissue class (wing, envelope, seed), reflecting the differing biological importance and segmentation difficulty of each class. We additionally report the mean IoU (mIoU) as a single-number summary used to rank models during benchmarking. For consistency, we compute IoU identically across all architectures.
 
-\subsection{Benchmarking Results}
+\subsection{Baseline Segmentation Performance and Proposed Benchmark}
 \begin{table}
 \begin{center}
-\begin{tabular}{||c | c | c | c||}
+\begin{tabular}{||c || c | c | c |c ||}
  \hline
-\textbf{Model} & \textbf{Wing} & \textbf{Envelope} & \textbf{Seed}\\ [2ex] 
+\textbf{Model} & \textbf{Wing} & \textbf{Envelope} & \textbf{Seed} & \textbf{mIoU} \\ [2ex] 
  \hline\hline
- U-Net & 95.91\% & 94.68\% & 78.35\% \\ [2ex]
+ U-Net & \textbf{95.60\%} & \textbf{94.02\%} & 78.13\% & 85.53\% \\ [2ex]
  \hline
- Boundary Down-Weighted Loss & \textbf{96.11\%} & 95.00 \% & 78.32\% \\ [2ex]
+ U-Net-Down & 95.52\% & 94.00\% & \textbf{78.28\%} & \textbf{85.58}\% \\ [2ex]
  \hline
- Boundary Up-Weighted Loss & 95.89\% & 94.93\% & 78.63\% \\ [2ex]
+ U-Net-Up & 95.58\% & 93.99\% & 77.60\% & 85.14\% \\ [2ex]
  \hline
- nnU-Net & 95.09\% & 92.30\% & 72.48\% \\ [2ex]
+ nnU-Net & 95.09\% & 92.30\% & 72.48\% & 82.50\% \\ [2ex]
  \hline
- DeepLabV3+ & N/A & N/A & N/A\\ [2ex]
+ DeepLabV3+ & 95.19\% & 93.47\% & 75.8\% & 84.17\%\\ [2ex]
  \hline 
- SegFormer & N/A & N/A & N/A \\ [2ex]
+ DeepLabV3+-Up & 95.27\% & 93.61\% & 75.63\% & 84.20\% \\ [2ex]
+ \hline 
+ DeepLabV3+-Down & 95.14\% & 93.3\% & 75.89\% & 84.11\% \\ [2ex]
+ \hline 
+ SegFormer & 95.03\% & 93.01\% & 75.07\% & 83.52\% \\ [2ex]
  \hline
- MaskFormer & N/A & N/A & N/A \\ [2ex]
+ SegFormer-Up & 94.99\% & 93.09\% & 75.23\% & 83.48\% \\ [2ex]
  \hline
- SAM 3 & N/A & N/A & N/A \\ [2ex]
+ SegFormer-Down & N/A & N/A & N/A & N/A \\ [2ex]
+ \hline
+ Mask2Former & N/A & N/A & N/A & N/A\\ [2ex]
+ \hline
+ SAM 3 & N/A & N/A & N/A & N/A\\ [2ex]
+ \hline
+ SAM 3-Up & N/A & N/A & N/A & N/A\\ [2ex]
+ \hline
+ SAM 3-Down & N/A & N/A & N/A & N/A\\ [2ex]
  \hline
  
 \end{tabular}
@@ -253,40 +264,47 @@ The metric has a range between 0 and 1, with a value of 1 indicating perfectly s
 \end{center}
 \end{table}
 
-We evaluated the U-Net's segmentation performance on 5 raw images containing 61 seed pods in total. The results are displayed in Table \ref{results_table}. The model with boundary-weighted loss achieved a Jaccard index score of approximately 96\% for wing segmentation and exactly 95\% for envelope segmentation. However, the model achieved a lower similarity score of 78.32\% for seed segmentation. Compared to the vanilla U-Net, the boundary-weighted loss function yields slightly higher wing and envelope segmentation similarities, but its seed segmentation score is fractionally lower. There are few visual errors in the predicted segmentation outputs, which we see in Figure \ref{segmentations}. We found no prior work measuring semantic segmentation of pennycress to compare with our model.
+We evaluated our models' segmentation performance on 5 raw images containing 61 seed pods in total. Per-class IoU and across-class mIoU are reported in Table~\ref{tbl:pennycress-results}. The boundary up-weighted U-Net achieved the highest mIoU at 89.82\%, narrowly ahead of the down-weighted variant at 89.81\%. nnU-Net underpeformed compared to the custom U-Net variants on envelope and seed classes. We attribute this gap to nnU-Net's incompatibility with our custom tile generation scheme: nnU-Net imposes its own patch sampling policy, and the resulting losses diverged early in training, indicating overfitting due to a comparatively small effective sample size. We found no prior work measuring semantic segmentation of pennycress to compare with our model benchmark suite.
 
-\begin{figure}[!ht]
-    \center
-    \includegraphics[width=\linewidth]{figures/pennycress-unet/full-image-prediction.png}
-    \caption{U-Net Prediction on a single Pennycress Image}
-    \label{segmentations}
-\end{figure}
+Four additional architectures remain to be evaluated, as indicated by \textit{N/A} rows in the results table: DeepLabV3+, SegFormer, Mask2Former, and SAM 3. Per Objective~\ref{obj:benchmark}, the best-performing architecture will be adopted for population-scale phenotyping. If the resulting phenotype set differs meaningfully from the U-Net basline, downstream GWAS and module analysis will be re-run on the updated set.
+
+%\begin{figure}[!ht]
+%    \center
+%    \includegraphics[width=\linewidth]{figures/pennycress-unet/full-image-prediction.png}
+%    \caption{U-Net Prediction on a single Pennycress Image}
+%    \label{segmentations}
+%\end{figure}
 
 \subsection{Population-Scale Phenotyping}
 
-Having established a baseline segmentation model (Objective~\ref{obj:baseline}), we applied it at population scale to characterize phenotypic structure across the pennycress accession panel. We measured phenotypes from over 11,000 seed pods across 761 genotypes. Each image contained approximately 15 seed pods and took around 2 minutes to segment with the model. Images took approximately 1.5 hours to segment by hand, meaning that model inference was 30 times faster than hand segmentation.
+Having established a baseline segmentation model (Objective~\ref{obj:baseline}), we applied it at population scale to characterize phenotypic structure across the pennycress accession panel. We measured phenotypes from over 11,000 seed pods across 771 accessions. Each image contained approximately 15 seed pods and took around 2 minutes of model inference time to segment, compared to approximately 1.5 hours of hand segmentation per image, yielding an estimated $30\times-40\times$ throughput gain depending on annotator pace.
 
-We used the feature extraction methods described in Section \ref{feature_ex} to create an open-source dataset of over 50 phenotypes for all 11,000 seed pods. In Figure \ref{area_dist}, we examine the distributions of three key phenotypes: wing area, envelope area, and seed area. These traits were examined due to their direct relationship to model performance. Each trait was log-normally distributed, but their mean and variance were different. The log-normal distribution of these traits indicates that our U-Net model accurately captured their biological underpinnings, as plant traits typically fall into a log-normal distribution \cite{TRY}.
+We used the feature extraction pipeline described in Section \ref{sec:phenotype-extraction} to construct an open-source dataset of over 50 phenotypes for all 11,000+ seed pods. Figure \ref{area_dist} shows the distributions of three key phenotypes: wing area, envelope area, and seed area. These traits correspond directly to the three annotated tissue classes, making their distributions a useful biological plausibility check on segmentation output. Each trait was log-normally distributed with distinct means and variances, consistent with the log-normal distributions commonly observed quantitative plant traits~\cite{TRY}.
 
-Consistent with the wing-seed regulatory association described in Section~\ref{sec:pc-background}, wing area was positively correlated with seed area and seed count (Spearman $r = 0.51$ and $0.30$, respectively; Figure~\ref{wing_seed_corr}). The resulting per-accession phenotype matrix served two roles: input to iRF-LOOP (Section~\ref{sec:pen}) and the candidate trait pool for heritability filtering and GWAS (Section~\ref{sec:gwas}).
+Consistent with the wing-seed regulatory association described in Section~\ref{sec:pc-background}, wing area was positively correlated with seed area and seed count (Spearman $r = 0.51$ and $0.30$, respectively; Figure~\ref{wing_seed_corr}). The resulting per-accession phenotype matrix served two roles: as input to iRF-LOOP for PPN construction (Section~\ref{sec:pen}), and as the candidate trait pool for heritability filtering and GWAS (Section~\ref{sec:gwas}).
 
 \begin{figure}[!ht]
     \center
     \includegraphics[width=\linewidth]{figures/pennycress-unet/area-distributions.png}
-    \caption{Distribution of Areas by Seed Pod Tissue}
+    \caption{Distribution of wing, envelope, and seed areas across the 11{,}000 seed pod population. All three traits exhibit log-normal distributions consistent with expected plant trait variation.}
     \label{area_dist}
 \end{figure}
 
 \begin{figure}[!ht]
     \center
     \includegraphics[width=\linewidth]{figures/pennycress-unet/wing-area-v-seed-area-count.png}
-    \caption{Wing Area vs. Seed Area and Count}
+    \caption{Wing versus (a) seed area and (b) seed count across the population. Positive correlations (Spearman $r = 0.51$ and $0.30$, respectively) are consistent with wing-seed regulatory association in Brassicaceae.}
     \label{wing_seed_corr}
 \end{figure}
 
 \subsection{Predictive Phenotype Network Construction}
 
-\subsection{Proposed Architecture Benchmark}
+\begin{figure}[!ht]
+    \center
+    \includegraphics[width=\linewidth]{figures/pennycress-unet/pc-ppn-top0.05.pdf}
+    \caption{Predictive Phenotype Network for Pod-Related Traits}
+    \label{fig:pc-ppn}
+\end{figure}
 
 \subsection{Phenotype Curation and Heritability estimation}
 
