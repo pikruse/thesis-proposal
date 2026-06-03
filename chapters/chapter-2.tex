@@ -225,7 +225,7 @@ We used intersection over union (IoU), also known as the Jaccard index, as the p
 
 IoU lies in $[0, 1]$, with a value of $1$ indicating identical sets and $0$ indicating disjoint sets. We report class-wise IoU for each tissue class (wing, envelope, seed), reflecting the differing biological importance and segmentation difficulty of each class. We additionally report the mean IoU (mIoU) as a single-number summary used to rank models during benchmarking. For consistency, we compute IoU identically across all architectures.
 
-\subsection{Baseline Segmentation Performance}
+\subsection{Segmentation Benchmark}
 \begin{table}
 \begin{center}
 \begin{tabular}{||c || c | c | c |c ||}
@@ -265,7 +265,7 @@ IoU lies in $[0, 1]$, with a value of $1$ indicating identical sets and $0$ indi
 \end{center}
 \end{table}
 
-We evaluated our models' segmentation performance on 5 raw images containing 61 seed pods in total. Per-class IoU and across-class mIoU are reported in Table~\ref{tbl:pennycress-results}. The boundary down-weighted U-Net achieved the highest mIoU at 85.58\%, narrowly ahead of the baseline U-Net at 85.53\%. nnU-Net underpeformed compared to the custom U-Net variants on envelope and seed classes. We attribute this gap to nnU-Net's incompatibility with our custom tile generation scheme: nnU-Net imposes its own patch sampling policy, and the resulting losses diverged early in training, indicating overfitting due to a comparatively small effective sample size. We found no prior work measuring semantic segmentation of pennycress to compare with our model benchmark suite.
+We evaluated our models' segmentation performance on 5 raw images containing 61 seed pods in total. Per-class IoU and across-class mIoU are reported in Table~\ref{tbl:pennycress-results}. The boundary down-weighted U-Net achieved the highest mIoU at 85.58\%, narrowly ahead of the baseline U-Net at 85.53\%. nnU-Net underpeformed compared to the custom U-Net variants on envelope and seed classes. We attribute this gap to nnU-Net's incompatibility with our custom tile generation scheme: nnU-Net imposes its own patch sampling policy, and the resulting losses diverged early in training, indicating overfitting due to a comparatively small effective sample size. No modern architecture surpassed the U-Net baseline. The transformer- and foundation-model-based architectures matched U-Net on the large wing class but trailed on the more detailed envelope and seed classes, with SAM 3 weakest overall (seed IoU as low as 57.61\%). The pattern may reflect our fixed small-tile pipeline, which limits the large receptive fields and pretraining priors these models rely on (Section~\ref{sec:tile-gen}). We found no prior work measuring semantic segmentation of pennycress to compare with our model benchmark suite.
 
 %\begin{figure}[!ht]
 %    \center
@@ -276,16 +276,16 @@ We evaluated our models' segmentation performance on 5 raw images containing 61 
 
 \subsection{Population-Scale Phenotyping}
 
-Having established a baseline segmentation model (Objective~\ref{obj:baseline}), we applied it at population scale to characterize phenotypic structure across the pennycress accession panel. We measured phenotypes from over 11,000 seed pods across 771 accessions. Each image contained approximately 15 seed pods and took around 2 minutes of model inference time to segment, compared to approximately 1.5 hours of hand segmentation per image, yielding an estimated $30\times-40\times$ throughput gain depending on annotator pace.
+Having established a baseline segmentation model (Objective~\ref{obj:baseline}), we applied it at population scale to characterize phenotypic structure across the pennycress accession panel. We measured phenotypes from over 11,000 seed pods across 771 accessions. Each image contained approximately 15 seed pods and took around 2 minutes of model inference time to segment, compared to approximately 1.5 hours of hand segmentation per image, yielding an estimated $30\times-45\times$ throughput gain depending on annotator pace.
 
-We used the feature extraction pipeline described in Section \ref{sec:phenotype-extraction} to construct an open-source dataset of over 50 phenotypes for all 11,000+ seed pods. Figure \ref{area_dist} shows the distributions of three key phenotypes: wing area, envelope area, and seed area. These traits correspond directly to the three annotated tissue classes, making their distributions a useful biological plausibility check on segmentation output. Each trait was log-normally distributed with distinct means and variances, consistent with the log-normal distributions commonly observed quantitative plant traits~\cite{TRY}.
+We used the feature extraction pipeline described in Section \ref{sec:phenotype-extraction} to construct an open-source dataset of over 50 phenotypes for all 11,000+ seed pods. Figure \ref{area_dist} shows the distributions of three key phenotypes: wing area, envelope area, and seed area. These traits correspond directly to the three annotated tissue classes, making their distributions a useful biological plausibility check on segmentation output. Each trait was log-normally distributed with distinct means and variances, consistent with the log-normal distributions commonly observed in quantitative plant traits~\cite{TRY}.
 
-Consistent with the wing-seed regulatory association described in Section~\ref{sec:pc-background}, wing area was positively correlated with seed area and seed count (Spearman $r = 0.51$ and $0.30$, respectively; Figure~\ref{wing_seed_corr}). The resulting per-accession phenotype matrix served two roles: as input to iRF-LOOP for PPN construction (Section~\ref{sec:pen}), and as the candidate trait pool for heritability filtering and GWAS (Section~\ref{sec:gwas}).
+Consistent with the wing-seed regulatory association described in Section~\ref{sec:pc-background}, wing area was positively correlated with seed area and seed count (Pearson $r = 0.51$ and $0.30$, respectively; Figure~\ref{wing_seed_corr}). The resulting per-accession phenotype matrix served two roles: as input to iRF-LOOP for PPN construction (Section~\ref{sec:pen}), and as the candidate trait pool for heritability filtering and GWAS (Section~\ref{sec:gwas}).
 
 \begin{figure}[!ht]
     \center
     \includegraphics[width=\linewidth]{figures/pennycress-unet/area-distributions.png}
-    \caption{Distribution of wing, envelope, and seed areas across the 11{,}000 seed pod population. All three traits exhibit log-normal distributions consistent with expected plant trait variation.}
+    \caption{Distribution of wing, envelope, and seed areas across the over 11{,}000 seed pod population. All three traits exhibit log-normal distributions consistent with expected plant trait variation.}
     \label{area_dist}
 \end{figure}
 
@@ -307,9 +307,9 @@ Consistent with the wing-seed regulatory association described in Section~\ref{s
 
 After extracting phenotypes from our dataset, we used iRF-LOOP to construct PPNs for use in our downstream mechanistic interpretation. Running iRF-LOOP on the entire dataset yields a PPN with 48 nodes and 108 directed edges after filtering the network to include only the top 5\% of relationships (Figure~\ref{fig:pc-ppn}). Despite being a directed network, the PPN exhibits high reciprocity, indicating that predictive relationships tend to be mutual, which is expected for many geometrically derived traits. 
 
-Interestingly, the PPN clusters into three separate groups after filtering: one containing only "wing-to" and "seed-to" perimeter ratios, one containing only color features, and one containing mostly absolute features. Once again, due to the interrelated nature of geometric and color features, some grouping is expected. 
+The PPN separates into three connected components after filtering, each dominated by a single feature type: a 27-node component containing all color features across all three tissues, a 12-node component containing absolute geometry and area ratios, and a 9-node component containing all perimeter ratios. This separation by measurement type is expected given how tightly color and geometric features covary within each class.
 
-Network connections show the biological plausibility for our pipeline. In one clique, strongest relationships include seed color features, which are likely to be related due to being part of the same tissue. In the next, wing perimeter shows strong relationships with wing area, envelope perimeter, and envelope area. As perimeter grows, area does too, providing a plausible explanation for this relationship. Finally, the last clique shows envelope-to-total perimeter being related to seed-to-envelope perimeter and envelope-to-seed perimeter. It is sensible that if the envelope has a higher ratio to the total perimeter, it is larger and thus can contain more seeds, leading to those ratios being higher. We use this network in prior to running MENTOR to expand the seed gene set by including phenotypes related to those with significant GWAS hits in our analysis. 
+The network's structure offers a biological plausibility check on the extracted phenotypes. We use the PPN to expand the candidate gene set prior to module derivation: for each phenotype carrying a significant GWAS association, we add the genes mapped from its predictively related (PPN-neighboring) phenotypes, broadening the seed set beyond the directly associated traits.
 
 \subsection{Phenotype Curation and Heritability estimation}
 During mechanistic interpretation, we limit our focus to heritable phenotypes derived by our U-Net pipeline in order to isolate the pipeline's utility. Starting with a full panel of 149 phenotypes collected from the same areas described in Section~\ref{sec:pennycress-dataset}, we drop all traits that were not extracted via our pipeline. Next, we calculate heritabilities using a mixed model and remove all phenotypes with $H^2 > 0.05$. This yields 38 heritable traits for genome-wide association testing.
@@ -338,8 +338,14 @@ We perform GWAS with our traits on a panel of 188 accessions taken from dryland 
 \end{itemize}
 
 \subsection{MENTOR Module Derivation}
+\begin{itemize}
+    \item 
+\end{itemize}
 
 \subsection{MENTOR-IA Preliminary Interpretation}
+\begin{itemize}
+    \item Explain inputs to the MENTOR-IA pipeline 
+\end{itemize}
 
 \section{Discussion}
 Our team developed a U-Net model for high-throughput segmentation of pennycress seed pods, and we created an open-source, hand annotated ground truth dataset of 365 seed pod images to use for training data. We performed a population-scale study with the model, extracting over 50 phenotypes from 11,000 seed pods belonging to 761 naturally occurring accessions of pennycress. The U-Net produced over 95\% accurate wing and envelope segmentations and almost 80\% accurate seed segmentations. Additionally, model inference provided a 30x speed increase over manual hand-segmentation.
