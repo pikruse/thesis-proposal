@@ -161,7 +161,7 @@ We extracted nine color features from each tissue: red, green, blue (RGB); hue, 
 
 We aggregated each color channel across spatial dimensions by taking the mean over relevant tissue's pixels, producing a nine-dimensional color vector per tissue. Across the three tissues, this yielded 27 features in total.
 
-\section{Segmentation Architecture Benchmarking}\label{sec:benchmark}
+\subsection{Segmentation Architecture Benchmarking}\label{sec:benchmark}
 To ensure that our pipeline extracts the most accurate downstream phenotypes possible, we sought to identify the most performant segmentation architecture. We tested six architectures across three families: CNNs, transformers, and foundation models. 
 
 We compared two CNN architectures to the baseline U-Net: nnU-Net \cite{isensee2021nnu} and DeepLabV3+ \cite{chen2018encoder}. nnU-Net is an approach which configures a U-Net systematically through a three-stage pipeline. The selection process includes fixed parameters, which generalize across many datasets; rule-based parameters, which are determined by unique dataset and pipeline characteristics; and empirical parameters, which are learned through trial and error. Because nnU-Net derives its own patching, batch size, and augmentation scheme through fingerprinting and rule-based selection, the benchmarking for this architecture did not include our custom tile generation scheme (Section~\ref{sec:tile-gen}). DeepLabV3+ combines an encoder-decoder architecture with atrous depthwise separable convolutions, balancing the use of long-range spatial context with fine-grained boundary detection.
@@ -174,42 +174,42 @@ We trained DeepLabV3+, SegFormer, and Mask2Former from default pretrained backbo
 
 For all models except nnU-Net and Mask2Former, we trained variants with unweighted, up-weighted, and down-weighted boundary loss. Due to nnU-Net's adaptive pipeline and Mask2Former's mask-classification objective, boundary-weighting was not compatible with these architectures. These model families provide coverage across architectures (CNN and transformer), training objectives (per-pixel prediction and set prediction), and learning scenarios (supervised pretraining and foundation model pretraining).
 
-\section{Predictive Phenotype Networks}\label{sec:pen}
+\subsection{Predictive Phenotype Networks}\label{sec:pen}
 To explore the relationships between measured phenotypes, we produced PPNs using iRF-LOOP \cite{cliff2019high}. Given an input set of extracted phenotypes for each pod, we computed the average value for each accession, which we used as input to the model. iRF-LOOP uses iterative random forest to predict a single held out phenotype from all others. Iterative random forest modifies each feature's sampling probability according to its importance (e.g., mean decrease in Gini impurity) allowing informative features to be selected more frequently as the model converges. This process is repeated by holding out each phenotype, with the entire model output yielding pairwise importance values between phenotypes.
 
 Using the iRF-LOOP output, we constructed predictive phenotype networks. PPNs take the form of a directed graph, where nodes represent phenotypes and edges represent predictive relationships. An edge from phenotype A to phenotype B indicates that A is predictive of B, with edge weight equal to the iRF-LOOP importance of A in predicting B. Using the raw iRF-LOOP output produces a dense network with all phenotypes connected to all others; however, we induced sparsity and highlighted only strong predictive relationships by retaining only edges whose weight falls in the top 5\%. PPN outputs allowed us to perform an exploratory analysis of relationships between phenotypes, while also helping expand our seed set before downstream multiplex network analyses with \textsc{Mentor} (Section~\ref{sec:mentor}).
 
-\section{Genome-Wide Association Study}\label{sec:gwas}
+\subsection{Genome-Wide Association Study}\label{sec:gwas}
 After measuring seed pod phenotypes and their relationships on a population scale, we perform a genome-wide association study (GWAS) to find significant relationships between phenotypes and pennycress loci.
 
-\subsection{Phenotype Curation and Heritability Estimation}
+\subsubsection{Phenotype Curation and Heritability Estimation}
 Before running association tests, we assessed whether each phenotype had sufficient genetic signal to warrant GWAS by estimating broad-sense heritability ($H^2$) independently for each environment (dryland and floodland). Because most accessions in our panel are unreplicated, $H^2$ was estimated on the subset of $n=25$ replicated genotypes. For each phenotype, we fit a linear mixed model with genotype as a random effect and computed
 \[
 H^2 = \sigma^2_G / (\sigma^2_G + \sigma^2_E),
 \]
 where $\sigma^2_G$ and $\sigma^2_E$ are genotypic and residual variance components. Phenotypes with $H^2 <0.05$ were removed from downstream association analyses due to lacking sufficient heritable signal. We additionally restricted our analysis to phenotypes derived from the U-Net segmentation pipeline described in Section~\ref{sec:unet}, excluding manually measured traits to maintain methodological consistency.
 
-\subsection{Association Testing}
+\subsubsection{Association Testing}
 GWAS tests each variant across the genome for statistical association with a phenotype, typically using a linear mixed model that includes a kinship matrix and population structure covariates to control for confounding from relatedness and stratification. Each SNP-phenotype test produces a p-value, and SNPs exceeding a genome-wide significance threshold are reported as significant associations. We fit four single- and multi-locus association models implemented in GAPIT \cite{wang2021gapit}: MLM, MLMM, FarmCPU, and BLINK. SNPs were filtered to a minor allele frequency (MAF) of $\geq 0.03$ prior to testing. We ran GWAS independently per phenotype and a retained SNPs as significant if they passed a Benjamini-Hochberg false discovery rate threshold of $q \leq 0.2$ under at least one of the four methods. The permissive cutoff was justified by our use of GRIN \cite{sullivan2024grin} to filter false positives under the relaxed threshold.
 
-\subsection{SNP-to-Gene Assignment}
+\subsubsection{SNP-to-Gene Assignment}\label{sec:snp2gene}
 After finding significant loci, we mapped SNPs to candidate genes using a two-pronged approach. For each significant SNP, we first fit a local linkage disequilibrium (LD) decay curve and defined a data-driven window around the SNP based on fitted decay distance. We then identified all genes whose coordinates fall within this window on the pennycress TAV2 reference genome. To capture associations with genes that lie outside the LD window but in close physical proximity, we additionally included the nearest annotated gene by physical distance. SNPs in regions where LD decay could not be reliably fit were excluded from LD-window assignment but retained via nearest-gene distance. Because functional annotation of the pennycress genome is limited, we annotated each assigned pennycress gene by its best BLAST-hit Arabidopsis ortholog from TAIR \cite{garcia2002tair} to enable downstream biological interpretation.
 
-\subsection{Seed Gene Set Construction}
+\subsubsection{Seed Gene Set Construction}
 We aggregate gene assignments across both environments by taking the union of genes mapped from significant SNPs, regardless of which environment or which GWAS method produced the original association. After applying the heritability filter ($H^2 > 0.05$) and restricting to phenotypes derived from the U-Net segmentation pipeline, four pod related phenotypes (\texttt{pod\_env\_b\_2}, \texttt{pod\_env\_to\_seed\_area}, \texttt{pod\_wing\_area}, and \texttt{pod\_wing\_to\_seed\_area}) yielded significant GWAS hits, mapping to 6 unique SNPs and 69 pennycress genes, 64 of which had annotated Arabidopsis TAIR orthologs. We note that these four phenotypes are highly correlated, as they are geometric ratios computed from a common set of pod measurements, and therefore do not represent four biologically independent signals. This gene set serves as the seed input to the \textsc{Mentor} module derivation described in Section~\ref{sec:mentor}.
 
 To expand the candidate gene set, we additionally included the direct neighbors of each surviving phenotype in the PPN (Section~\ref{sec:pen}) and took the union of their GWAS-derived gene assignments. This leverages the assumption that mutually predictive phenotypes share some underlying genetic architecture. The resulting expanded seed gene set is passed to GRIN~(Section~\ref{sec:grin}) for network-based refinement.
 
-\section{MENTOR Module Derivation}\label{sec:mentor}
-\subsection{GRIN Filtering}\label{sec:grin}
+\subsection{MENTOR Module Derivation}\label{sec:mentor}
+\subsubsection{GRIN Filtering}\label{sec:grin}
 Before using our GWAS-derived gene set as input to \textsc{Mentor} for module construction, we applied GRIN \cite{sullivan2024grin} to filter potential false positive genes. Given a seed gene set of potentially significant genes and network of connected genes, GRIN operates in two stages. First, it runs RWR on the seed gene set, yielding a rank vector of the most closely related genes in the network to the seed genes; in parallel, it runs RWR on 100 randomly sampled gene sets of the same size as the seed set, creating a null distribution rank vector. Next, GRIN uses a sliding-window Mann-Whitney U test to evaluate the likelihood of observing the seed gene RWR ranks at random. With this sliding window, a threshold can be defined where the ranks become insignificant, providing a threshold for filtering. The resulting significant genes are kept as members of the seed gene set, while all others are dropped. We applied GRIN filtering to our seed gene set to eliminate potential false positive significant genes.
 
-\subsection{Module Construction}
+\subsubsection{Module Construction}
 Using our filtered set of seed genes as input, we applied \textsc{Mentor} to group them into functionally related modules. \textsc{Mentor} is a multi-step framework for deriving functionally related modules given a multiplex network and seed genes as input \cite{mentor}. We used an \textit{Arabidopsis thaliana} multiplex, as the species is closely related to pennycress and has a fully sequenced genome.
 
 Starting from the GRIN-filtered seed genes (Section~\ref{sec:grin}), \textsc{Mentor} applies random walk with restart (RWR) as a diffusion method to measure the probability of traveling to each gene in the multiplex from all genes in the seed set. Each seed gene produces its own score vector over all multiplex nodes, with indices representing the probability of reaching each node from the seed gene. The score vectors are then rank-ordered, truncated at the elbow of the mean score vs. rank curve, and converted into a dissimilarity matrix by taking $(1 - \rho)$, with $\rho$ representing Spearman correlation, between each pair of genes' rank-ordered score vectors. With the resulting dissimilarities, \textsc{Mentor} creates a dendrogram using agglomerative clustering with complete linkage as our module distance measure. This dendrogram is then thresholded to examine modules of a certain size. To make exploration tractable, we chose to only focus on modules that contain genes from our seed set.
 
-\section{MENTOR-IA Interpretation}\label{sec:mentor-ia}
+\subsection{MENTOR-IA Interpretation}\label{sec:mentor-ia}
 After deriving a set of modules with \textsc{Mentor}, we conducted a preliminary, proof-of-concept interpretation of these modules using \textsc{Mentor-IA} \cite{mentor-ia}. \textsc{Mentor-IA} is a multi-agent LLM framework for mechanistic interpretation, in which specialized agents each contribute to a distinct line of evidence. These agents include a mygene interpreter, which utilizes gene summaries, GO terms, and pathway annotations to explore each gene's role individually; a literature agent, which explores mechanistic connections in related literature via Europe PMC; an enrichment agent, which tests whether a module is enriched for pathways in GO, KEGG, or Reactome; a network agent, which uses subgraph evidence to refine the interpretation; and a meta aggregator, which synthesizes evidence to produce a coherent mechanistic summary.
 
 Using the evidence provided by \textsc{Mentor-IA} as a starting point, we manually examined pennycress and \textit{Brassicacae} literature to assess whether the proposed mechanisms were consistent with known biology. For the modules we examined, the proposed mechanisms aligned with established pod- and seed-trait biology, demonstrating that the framework can connect the phenotypes measured by our pipeline to candidate mechanistic explanations.
@@ -315,15 +315,43 @@ The network's structure offers a biological plausibility check on the extracted 
 During mechanistic interpretation, we limit our focus to heritable phenotypes derived by our U-Net pipeline in order to isolate the pipeline's utility. Starting with a full panel of 149 phenotypes collected from the same areas described in Section~\ref{sec:pennycress-dataset}, we drop all traits that were not extracted via our pipeline. Next, we calculate heritabilities using a mixed model and remove all phenotypes with $H^2 > 0.05$. This yields 38 heritable traits for genome-wide association testing.
 
 \subsection{Genome-Wide Association Testing}
-We perform GWAS with our traits on a panel of 188 accessions taken from dryland and floodland environments. Using a four model ensemble in the GAPIT R package to estimate significance. SNPs with a minor allele frequency $\leq 0.03$ are filtered, and we use an FDR (BH) threshold of $\leq 0.20$ as our cutoff. GWAS yielded ?? significant hits across 4 phenotypes: \textit{pod-env-b-2}, \textit{pod-env-to-seed-area}, \textit{pod-wing-area}, and \textit{pod-wing-to-seed-area}.
+We performed GWAS on the heritability-filtered, U-Net derive pod traits on a panel of 188 accessions with dryland and floodland environments tested separately. We used a four GAPIT models to estimate significance. Variant with MAF below $0.03$ were excluded, and we used an FDR (BH) threshold of $\leq 0.20$ as our cutoff. 
 
-\subsection{SNP-to-Gene Assignment}
+GWAS yielded 10 model-level association calls representing six unique SNPs across four phenotypes: \textit{pod\_env\_b\_2}, \textit{pod\_env\_to\_seed\_area}, \textit{pod\_wing\_area}, and \textit{pod\_wing\_to\_seed\_area}. All of the retained associations came from the dryland environment, and the most recurrent signal came from \textit{pod\_env\_to\_seed\_area}. Our GWAS results are summarized in Table~\ref{tbl:gwas-results}.
+
+\begin{table}[htbp]
+    \centering
+    \small
+    \setlength{\tabcolsep}{3.5pt}
+    \renewcommand{\arraystretch}{1.1}
+    \begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{0.27\textwidth} c c c >{\raggedright\arraybackslash}X l c@{}}
+        \toprule
+        Trait & $H^2$ & SNPs & Calls & Models & Lead SNP & Lead raw $p$ \\
+        \midrule
+        \texttt{pod\_env\_b\_2} 
+        & 0.217 & 1 & 1 & MLMM & \texttt{4\_8127380} & $8.71 \times 10^{-7}$ \\
+
+        \texttt{pod\_env\_to\_seed\_area} 
+        & 0.200 & 3 & 7 & BLINK, FarmCPU, MLMM & \texttt{5\_963441} & $1.04 \times 10^{-7}$ \\
+
+        \texttt{pod\_wing\_area} 
+        & 0.366 & 1 & 1 & MLMM & \texttt{7\_63065228} & $4.14 \times 10^{-7}$ \\
+
+        \texttt{pod\_wing\_to\_seed\_area} 
+        & 0.285 & 1 & 1 & MLMM & \texttt{2\_2343403} & $6.06 \times 10^{-7}$ \\
+        \bottomrule
+    \end{tabularx}
+    \caption{Summary of retained GWAS associations for heritable U-Net-derived pod traits. Model-level calls are counted as unique SNP-trait-environment-method combinations. All retained associations were detected in the dryland environment.}
+    \label{tbl:gwas-results}
+\end{table}
+
+\subsection{SNP-to-Gene Mapping}
+We mapped the six retained SNPs from GWAS to pennycress genes using the mixed LD and distance-based approach described in Section~\ref{sec:snp2gene}.
+
 \begin{itemize}
-    \item method recap: ld-decay fit windows + nearest annotated gene by distance with TAIR ortholog annotation via best BLAST hit
-    \item LD-decay quality (fit windows, fit $R^2$)
-    \item SNPs dropped from poor LD regions
-    \item BLAST params for TAIR orthology
-    \item fig: LD-decay fit example for one chromosome, with fit window marked
+    \item explain that 6 retained snps were mapped to pennycress genes
+    \item state mapping rule: ld-decay window + nearest-gene/distance-based assignment
+    \item report output: 69 candidate genes, 64 arabidopsis TAIR orthologs
 \end{itemize}
 
 \subsection{Seed Gene Set Construction}
@@ -353,3 +381,4 @@ Our team developed a U-Net model for high-throughput segmentation of pennycress 
 Despite this progress, our work has some limitations. Collecting and scanning seed pods to use for segmentation is still a labor-intensive process; this could become a bottleneck in future population-scale studies. Additionally, the model’s performance is dependent on the quality of label data due to its supervised nature. Accurately annotating seed border pixels was difficult due to the low brightness and contrast levels in image scans, and this limitation was reflected in the lower accuracy for seeds than other surfaces. Therefore, it is important to find methods to improve image quality in future work, possibly utilizing higher-resolution scanners.
 
 This work has several implications for future pennycress research. We found no prior work that extracts intensive phenotypes from pennycress seed pods due to the labor-intensive nature of this task. Therefore, this article provides a novel pipeline for extracting several biologically important phenotypes at the population-scale for pennycress. The framework allows scientists to perform experiments on pennycress that were previously impossible; for example, researchers can examine how treatments and experimental conditions affect entire populations by measuring seed pod phenotypes across treatment groups. Furthermore, scientists can test hypotheses about phenotypic relationships on a broad scale, leading to higher-impact research. Additionally, the pipeline can be used in conjunction with GWAS to pinpoint the underlying genetic drivers of traits. Scientists can find relationships between genome regions and phenotypes collected from the pipeline, providing a path for new genetic modification studies in the future. Overall, the pipeline presented in this paper provides several avenues for the advancement of pennycress as a seed-oil based biofuel feedstock.
+
