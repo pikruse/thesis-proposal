@@ -346,29 +346,29 @@ GWAS yielded 10 model-level association calls representing six unique SNPs acros
 \end{table}
 
 \subsection{SNP-to-Gene Mapping}
-We mapped the six retained SNPs from GWAS to pennycress genes using the mixed LD and distance-based approach described in Section~\ref{sec:snp2gene}.
+We mapped the six retained SNPs from GWAS to pennycress genes using the mixed LD-decay and distance-based approach described in Section~\ref{sec:snp2gene}. For each SNP, we defined a window centered on the SNP with a width set by local LD-decay distance and assigned the nearest annotated genes falling in that window, retaining any gene whose body directly contained that SNP. Windows spanned approximately $24.6-49.6$\~kb, with strong LD-decay fits ($R^2 = 0.944$--$0.989$), reflecting the different recombination contexts of each chromosomal region.
 
-\begin{itemize}
-    \item explain that 6 retained snps were mapped to pennycress genes
-    \item state mapping rule: ld-decay window + nearest-gene/distance-based assignment
-    \item report output: 69 candidate genes, 64 arabidopsis TAIR orthologs
-\end{itemize}
-
-\subsection{Seed Gene Set Construction}
-\begin{itemize}
-    \item filtering
-    \begin{itemize}
-        \item all-trait hits: 15 traits $\rightarrow$ [] unique SNPS $\rightarrow$ [] pennycress genes / [] TAIR orthologs
-        \item U-Net derived + heritable filter $\rightarrow$ 4 final traits
-        \item post-filter set: [] unique SNPs $\rightarrow$ 69 pennycress genes / 64 TAIR orthologs
-    \end{itemize}
-    \item trait correlation caveat: what are trait correlations?
-\end{itemize}
+This procedure produced 69 candidate pennycress genes, with half of the loci tracing to \texttt{pod\_env\_to\_seed\_area}, and each of the remaining three loci tracing to the remaining three traits. We mapped these genes to their nearest Arabidopsis orthologs in TAIR~\cite{garcia2002tair} to enable cross-species functional annotation and module derivation. This mapping yielded 64 unique orthologs, as several pennycress genes shared an a single Arabidopsis ortholog. This ortholog set constitues the candidate seed gene set carried forward to module derivation (Section~\ref{sec:mentor}).
 
 \subsection{MENTOR Module Derivation}
-\begin{itemize}
-    \item 
-\end{itemize}
+We applied \textsc{Mentor} to the GRIN-filtered candidate seed gene set to resolve it into functionally related modules using the process described in Section~\ref{sec:mentor}. GRIN filtering reduced the set of 64 candidate orthologs to 33 seed genes, pruning 31 genes that lacked sufficient network support. Cutting the dendrogram at a starting module count of three under a maximum module size of 40 resolved our 33 seed genes into three modules of 5, 11, and 17 genes (Figure~\ref{fig:mentor-dendro}). No module exceeded the size cap, so no sub-clustering was triggered. We then used these modules for mechanistic interpretation (Section~\ref{sec:mentor-ia}).
+
+\begin{figure}[p]
+    \centering
+    \begin{subfigure}
+        \centering
+        \includegraphics[width=\linewidth,height=0.4\textheight,keepaspectratio]{figures/pennycress-unet/Pod_Unet.PodTraits.rectangular_subcluster_dendrogram_sk3_ki1_ms40_heatmap.pdf}
+        \caption{Rectangular Layout}\label{fig:mentor-dendro-rect} 
+    \end{subfigure}
+    \vspace{1em}
+    \begin{subfigure}
+        \centering
+        \includegraphics[width=\linewidth,height=0.4\textheight,keepaspectratio]{figures/pennycress-unet/Pod_Unet.PodTraits.polar_subcluster_dendrogram_sk3_ki1_ms40_heatmap.pdf}
+        \caption{Polar Layout}\label{fig:mentor-dendro-polar}
+    \end{subfigure}
+    \caption{\textsc{Mentor} dendrogram of the 33 GRIN-refined orthologs, shown in (\protect\ref{fig:mentor-dendro-rect}) rectangular and (\protect\ref{fig:mentor-dendro-polar}) polar layout. Hierarchical clustering of RWR embeddings resolves the gene set into three modules (5, 11, and 17 genes), indicated by leaf color.}
+    \label{fig:mentor-dendro}
+\end{figure}
 
 \subsection{MENTOR-IA Preliminary Interpretation}
 \begin{itemize}
