@@ -7,4 +7,9 @@
 *.toc
 *.bbl
 *.blg
+*.bcf
+*.lof
+*.lot
+*.nlo
+*.run.xml
 CLAUDE.md
