@@ -19,11 +19,11 @@ Deep learning models have achieved state-of-the-art performance in computer visi
 This work pursues a three-stage research trajectory. First, we train and benchmark deep learning models to measure pennycress seed pods at population scale, selecting the best-performing architecture through systematic comparison. Next, we identify candidate genes through phenotype-driven genome-wide association. Finally, we derive and mechanistically interpret functionally coherent gene modules from those candidate genes. We completed an end-to-end pass through this pipeline. Our architecture benchmark (Objective~\ref{obj:benchmark}) confirmed that the U-Net baseline remained the best-performing model, so the existing phenotype set and downstream results stand without re-running. The remaining proposed work extends to the preliminary mechanistic interpretation beyond its current proof-of-concept stage. The five objectives below structure this trajectory:
 
 \begin{enumerate}
-    \item\label{obj:baseline} \textbf{Establish a baseline deep learning segmentation pipeline for pennycress seed pods.} We trained a U-Net model with a boundary-weighted loss function on a hand-annotated dataset of 365 seed pod images, providing a baseline against which we benchmarked modern architectures (Objective~\ref{obj:benchmark}).
+    \item\label{obj:baseline} \textbf{Establish a baseline deep learning segmentation pipeline for pennycress seed pods.} We trained a U-Net model with a boundary-weighted loss function on a hand-annotated dataset of 345 seed pod images, providing a baseline against which we benchmarked modern architectures (Objective~\ref{obj:benchmark}).
+    
+    \item\label{obj:pop-scale} \textbf{Characterize population-scale phenotypic structure of pennycress seed pods.} We applied the baseline model to over 11,000 seed pods across 771 pennycress accessions and extracted over 50 phenotypes per pod, assessing biological validity through trait distributions and known wing-seed associations. Building on these results, we constructed predictive phenotype networks (PPNs) over the extracted phenotypes using iRF-LOOP~\cite{cliff2019high}, identifying mutually predictive traits across the population.
 
-    \item\label{obj:pop-scale} \textbf{Characterize population-scale phenotypic structure of pennycress seed pods.} We applied the baseline model to over 11,000 seed pods across 771 pennycress accessions and extracted over 50 phenotypes per pod, assessing biological validity through trait distributions and known wing-seed associations. Building on these results, we constructed predictive phenotype networks (PPNs) over the extracted phenotypes using iRF-LOOP \cite{cliff2019high}, identifying mutually predictive traits across the population.
-
-    \item\label{obj:benchmark} \textbf{Identify the best-performing segmentation architecture for pennycress.} We benchmarked a panel of segmentation architectures against the U-Net baseline: nnU-Net \cite{isensee2021nnu}, DeepLabV3+ \cite{chen2018encoder}, SegFormer \cite{xie2021segformer}, Mask2Former \cite{cheng2021mask2former}, and SAM 3 \cite{carion2025sam3}. The U-Net baseline achieved the highest mIoU, so the existing phenotype set stands and the downstream analyses (Objectives~\ref{obj:gwas} and~\ref{obj:interpret}) were not re-run.
+    \item\label{obj:benchmark} \textbf{Identify the best-performing segmentation architecture for pennycress.} We benchmarked a panel of segmentation architectures against the U-Net baseline, including nnU-Net, DeepLabV3+, SegFormer, Mask2Former, and SAM~3. The U-Net baseline achieved the highest mIoU, so the existing phenotype set stands and the downstream analyses (Objectives~\ref{obj:gwas} and~\ref{obj:interpret}) were not re-run.
 
     \item\label{obj:gwas} \textbf{Identify candidate genes from phenotype-driven genome-wide associations.} We ran a genome-wide association study (GWAS) to map phenotypes to genomic regions, and mapped significant SNP loci to their nearest annotated genes to construct a candidate gene set.
 
@@ -33,7 +33,7 @@ This work pursues a three-stage research trajectory. First, we train and benchma
 \section{Background and Related Work}\label{sec:pc-background}
 
 \section{Methods}
-This section details the methods which underpin our phenotyping pipeline, spanning dataset construction, image segmentation, population-scale phenotype extraction, phenotype-to-genotype mapping, and module-level mechanistic interpretation. Section~\ref{sec:pennycress-dataset} covers dataset collection, annotation, and preprocessing. Section~\ref{sec:unet} presents the U-Net segmentation backbone and training procedure. Section~\ref{sec:phenotype-extraction} details the phenotype extraction stage. Section~\ref{sec:benchmark} presents the models and criterion for benchmarking. Sections~\ref{sec:pen}-~\ref{sec:mentor-ia} cover the downstream biological pipeline: PEN construction, phenotype-to-genotype mapping, module derivation with \textsc{Mentor}, and mechanistic interpretation with \textsc{Mentor-IA}.
+This section details the methods which underpin our phenotyping pipeline, spanning dataset construction, image segmentation, population-scale phenotype extraction, phenotype-to-genotype mapping, and module-level mechanistic interpretation. Section~\ref{sec:pennycress-dataset} covers dataset collection, annotation, and preprocessing. Section~\ref{sec:unet} presents the U-Net segmentation backbone and training procedure. Section~\ref{sec:phenotype-extraction} details the phenotype extraction stage. Section~\ref{sec:benchmark} presents the models and criterion for benchmarking. Sections~\ref{sec:pen}--\ref{sec:mentor-ia} cover the downstream biological pipeline: PEN construction, phenotype-to-genotype mapping, module derivation with~\textsc{Mentor}, and mechanistic interpretation with~\textsc{Mentor-IA}.
 
 \subsection{Dataset}\label{sec:pennycress-dataset}
 \subsubsection{Data Collection}
@@ -68,7 +68,7 @@ For supervised model training, we created pixel-level annotated label data. We u
 \subsubsection{Data Preprocessing}\label{sec:preprocessing}
 We implemented two preprocessing steps required before model input. First, we separated each pennycress seed pod in the raw image. We created rectangular bounding boxes around each seed pod object in python, and we saved each bounding box as a separate image. We used these separated images for model input.
 
-After separation, we padded each image with 128 pixels in all directions. Image padding enables us to generate tiles near the edge of images, allowing the model to see a greater context. We explain the tile generation process further in Section \ref{sec:tile-gen}. The red box in the leftmost image in Figure \ref{pennycress_preproc} highlights the padding boundary.
+After separation, we padded each image with 128 pixels in all directions. Image padding enables us to generate tiles near the edge of images, allowing the model to see a greater context. We explain the tile generation process further in Section~\ref{sec:tile-gen}. The red box in the leftmost image in Figure~\ref{pennycress_preproc} highlights the padding boundary.
 
 \begin{figure}[!ht]
     \center
@@ -371,8 +371,37 @@ We applied \textsc{Mentor} to the GRIN-filtered candidate seed gene set to resol
 \end{figure}
 
 \subsection{MENTOR-IA Preliminary Interpretation}
+We used \textsc{Mentor-IA} to conduct a preliminary interpretation of the three modules derived by \textsc{Mentor} (Section~\ref{sec:mentor}). Module 1, which contained 18 Arabidopsis orthologs, was run with the enrichment agent, literature agent, mygene interpreter, and meta aggregator. Module 2, which contained 11 orthologs, was run with the same agents as Module 1. Module 3, which only contained 5 orthologs, was run with only the mygene interpreter and meta aggregator, as the small gene count limited the power of enrichment analyses. Due to the lack of an associated network for our modules, we did not use the network agent for analysis.
+
+\textsc{Mentor-IA} produced per-agent summaries for each module, along with a final interpretation that synthesized evidence across agents. This interpretation included keyword themes, enrichment statistics from GO and KEGG, and a mechanistic summary with candidate supporting citations. Across modules, the proposed mechanisms recovered known \textit{Brassicaceae} pod and seed biology rather than arbitrary associations, demonstrating our pipeline's ability to connect measured phenotypes to candidate mechanistic explanations. We manually cross-checked the agent output against pennycress and \textit{Brassicaceae} literature, finding the mechanistic summaries to be consistent with reported biology.
+
+\subsubsection{Module 1 Interpretation}
 \begin{itemize}
-    \item Explain inputs to the MENTOR-IA pipeline 
+    \item topic sentence - module theme (auxin-centered control of organ size, reproductive development) 
+    \item enrichment evidence to verify
+    \item "hero mechanism": ARF2 represses auxin responsive genes + limits cell proliferation in the integuments; loss of ARF2 enlarges seeds and other organs. acts with SEEDSTICK and GORDITA during integument/seed development. coherent candidate mechanism for variation in pod_env_to_seed_area and pod_wing_area [schruff 2006, paolo 2021]
+    \item RUS2 sustains polar auxin transport, consistent with auxin flux shaping, planar wing growth. [Ge 2010]
+    \item optional: ARF2 regulates senescence, which can modulate chlorophyll loss and pigmentation
+    \item trait linkage + hedge: module recovers an auxin/seed-size axis that aligns with GWAS-identified pod traits --> consistent with established Arabidopsis biology as a candidate mechanism, but not pennycress specific
+\end{itemize}
+
+\subsubsection{Module 2 Interpretation}
+\begin{itemize}
+    \item TS - metabolic supply --> chloroplast carbon, energy metabolism, autophagy-mediated nutrient remobilization. plausible connection to pod filling, envelope-to-seed allocation 
+    \item enrichment: limited to a single term, response to calcium ion. remaining genes derived from gene-level annotation instead of enrichment
+    \item strongest thread (autophagy): ATG9 sustains autophagic flux, which recycles nitrogen and carbon to developing seeds [inoue 2006, shin 2014, kang 2018, luo 2023, lai 2020]. candidate influence on pod_env_to_seed_area
+    \item TKL1 links the calvin cycle to the shikimate/pentose-phosphate routes [Rocha 2014; Khozaei 2015], and GPDHc1 balances NADH/NAD+ [Shen 2006], consistent with carbon partitioning shaping biomass and wing area
+    \item calcium-response enrichment via IQD23 suggests Ca2+ signaling may coordinate cytoskeletal remodeling during pod expansion
+    \item metabolic supply hypothesis: trait connection is more indirect than module 1's candidate, and is once again arabidopsis derived
+\end{itemize}
+
+\subsubsection{Module 3 Interpretation}
+\begin{itemize}
+    \item  TS: developmental gene regulation, proteostasis, smallest module, run without enrichment, so interpretation is the most preliminary
+    \item only mygene + meta ag ran, so mechanisms rely on gene-level annotation alone, without enrichment or literature support
+    \item VAL3 recruits histone-modifying machinery to silence embryo-seed matruation genes during vegetative growth, MUG3 (domesticated transposon) is implicated in floral/patterning fertility. mis-regulation could shift envelope-to-seed proportions
+    \item proteostasis: CRL4 ubiquitin-ligase component and a mitochondrial SUMO-like modifier implicate protein turnover and energy/ROS balance as candidate modulators of pod growth
+    \item hedge: most exploratory module, annotation-level hypotheses are pending literature and enrichment validation.
 \end{itemize}
 
 \section{Discussion}
