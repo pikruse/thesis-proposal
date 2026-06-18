@@ -1,7 +1,7 @@
 
 all:
 	pdflatex my-dissertation
-	bibtex my-dissertation
+	biber my-dissertation
 	pdflatex my-dissertation
 	pdflatex my-dissertation
 

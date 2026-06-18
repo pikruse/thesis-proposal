@@ -187,12 +187,14 @@ The competition's evaluation metric is the average PCC between predicted and obs
 \begin{algorithm}
 \caption{Competition PCC Evaluation}
 \label{alg:eval-pcc}
+\begin{algorithmic}[1]
 \For{each environment $e$ in test set}
     \State $y \gets$ true yields for $e$
     \State $\hat{y} \gets$ predicted yields for $e$
     \State $PCC_e \gets \text{Pearson}(y, \hat{y})$
 \EndFor
 \State $PCC_{total} \gets \frac{1}{E} \sum_{e=1}^E PCC_e$
+\end{algorithmic}
 \end{algorithm}
 
 

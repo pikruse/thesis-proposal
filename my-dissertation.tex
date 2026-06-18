@@ -46,6 +46,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \usepackage{nomencl}                    % produces a nomenclature
 \usepackage{float}                      % figure floats
+\usepackage{csquotes}                   % context-sensitive quotes; load before biblatex (provides displayquote)
 \usepackage[style=numeric]{biblatex}
 \addbibresource{references/references-dissertation.bib} 
 
@@ -57,25 +58,28 @@
 \usepackage[inactive]{srcltx}		 	% necessary to use forward and inverse searching in DVI
 \usepackage{relsize}                    % font sizing hierarchy
 \usepackage{booktabs}                   % professional looking tables
-\usepackage[config, labelfont={bf}]{caption,subfig} % nice sub figures
+% \usepackage[config, labelfont={bf}]{caption,subfig} % removed: subfig clashes with subcaption (used for \begin{subfigure}); caption is loaded below
 \usepackage{mathrsfs}                   % additional math scripts
 \usepackage[utf8]{inputenc}
 \usepackage{authblk}
 \usepackage{setspace}
-\usepackage{algorithmic}
+\usepackage{algorithm}                  % float wrapper for \begin{algorithm}
+\usepackage{algpseudocode}              % algorithmicx pseudocode (\State, \For, ...); replaces old algorithmic
 \usepackage{graphicx}
 \usepackage{textcomp}
 \usepackage{xcolor}
 \usepackage{multicol}
 \usepackage{listings}
-\usepackage{subcaption}
 \usepackage[labelfont=bf]{caption}
+\usepackage{subcaption}
 \usepackage{hyperref}
 \usepackage{lineno}
-\usepackage{subfigure}
+% \usepackage{subfigure} % removed: deprecated, clashes with subcaption (\c@subfigure already defined); unused (no \subfigure{} commands)
 \usepackage{booktabs}
 \usepackage{tabularx}
 \usepackage{array}
+\usepackage{makecell}                   % \makecell for multi-line table cells (chapter 3)
+\newcolumntype{Y}{>{\centering\arraybackslash}X} % centered tabularx column (chapter 4 tables)
 
 \newcommand{\todocite}[1]{\textcolor{red}{[#1]}}
 
