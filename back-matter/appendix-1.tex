@@ -6,3 +6,94 @@ Results from Experiment 1 go here.
 
 \section{Experiment 2}
 Results from Experiment 2 go here.
+
+\chapter{Supplementary Tables for Chapter~\ref{ch2:pennycress}}
+
+\begin{table}[htbp]
+    \centering
+    \caption{Broad-sense heritability ($H^2$) of all 52 U-Net-derived pod traits in the dryland environment, ordered by $H^2$. Estimates are from a linear mixed model with genotype as a random effect, fit on 25 replicated genotypes, and significance $p$ is from a restricted likelihood-ratio test on the genotype variance component ($H_0\!:\sigma^2_G = 0$). Traits marked $^{\ast}$ fell below the $H^2 \geq 0.05$ screen and were excluded from association testing; the remaining 34 were carried into GWAS and are reported with their GWAS status in Table~\ref{tab:ch2-heritability}.}\label{tbl:heritability-all}
+    \small
+    \setlength{\tabcolsep}{6pt}
+    \renewcommand{\arraystretch}{1.1}
+    \begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}X c c@{}}
+        \toprule
+        Trait & $H^2$ & Significance ($p$) \\
+        \midrule
+        envelope-to-wing area ratio & 0.461 & $<0.0001$ \\
+        envelope-to-total area ratio & 0.423 & 0.0002 \\
+        wing-to-envelope area ratio & 0.409 & 0.0003 \\
+        envelope perimeter & 0.390 & 0.0016 \\
+        envelope area & 0.389 & 0.0017 \\
+        wing-to-total area ratio & 0.387 & 0.0003 \\
+        wing area & 0.366 & 0.0010 \\
+        wing HSV saturation & 0.321 & 0.0022 \\
+        wing perimeter & 0.302 & 0.0060 \\
+        seed area & 0.297 & 0.0214 \\
+        envelope-to-wing perimeter ratio & 0.292 & 0.0006 \\
+        wing-to-envelope perimeter ratio & 0.287 & 0.0009 \\
+        wing-to-seed area ratio & 0.285 & 0.0077 \\
+        seed perimeter & 0.263 & 0.0334 \\
+        seed-to-wing area ratio & 0.247 & 0.0117 \\
+        envelope-to-total perimeter ratio & 0.230 & 0.0051 \\
+        wing CIELAB $b^*$ & 0.227 & 0.0525 \\
+        envelope HSV saturation & 0.220 & 0.0418 \\
+        seed count & 0.218 & 0.0319 \\
+        envelope CIELAB $b^*$ & 0.217 & 0.0315 \\
+        seed RGB red & 0.204 & 0.0881 \\
+        envelope-to-seed area ratio & 0.200 & 0.0501 \\
+        seed CIELAB $b^*$ & 0.190 & 0.0627 \\
+        seed-to-envelope area ratio & 0.188 & 0.0681 \\
+        seed-to-total area ratio & 0.188 & 0.0453 \\
+        seed HSV hue & 0.185 & 0.0796 \\
+        seed HSV saturation & 0.155 & 0.1048 \\
+        wing RGB blue & 0.131 & 0.1770 \\
+        seed HSV brightness & 0.120 & 0.1518 \\
+        seed CIELAB lightness & 0.097 & 0.1672 \\
+        envelope RGB green & 0.089 & 0.2169 \\
+        envelope CIELAB lightness & 0.086 & 0.2213 \\
+        seed RGB blue & 0.083 & 0.1234 \\
+        envelope HSV brightness & 0.068 & 0.2530 \\
+        seed RGB green$^{\ast}$ & 0.050 & 0.2874 \\
+        envelope HSV hue$^{\ast}$ & 0.028 & 0.3328 \\
+        wing-to-total perimeter ratio$^{\ast}$ & 0.026 & 0.3427 \\
+        envelope RGB red$^{\ast}$ & 0.006 & 0.4167 \\
+        envelope RGB blue$^{\ast}$ & 0.000 & 0.4405 \\
+        envelope CIELAB $a^*$$^{\ast}$ & 0.000 & 1.0000 \\
+        envelope-to-seed perimeter ratio$^{\ast}$ & 0.000 & 0.4513 \\
+        seed CIELAB $a^*$$^{\ast}$ & 0.000 & 1.0000 \\
+        seed-to-envelope perimeter ratio$^{\ast}$ & 0.000 & 1.0000 \\
+        seed-to-total perimeter ratio$^{\ast}$ & 0.000 & 1.0000 \\
+        seed-to-wing perimeter ratio$^{\ast}$ & 0.000 & 0.4469 \\
+        wing CIELAB $a^*$$^{\ast}$ & 0.000 & 1.0000 \\
+        wing RGB green$^{\ast}$ & 0.000 & 0.4450 \\
+        wing HSV hue$^{\ast}$ & 0.000 & 0.4492 \\
+        wing CIELAB lightness$^{\ast}$ & 0.000 & 0.4516 \\
+        wing RGB red$^{\ast}$ & 0.000 & 1.0000 \\
+        wing-to-seed perimeter ratio$^{\ast}$ & 0.000 & 1.0000 \\
+        wing HSV brightness$^{\ast}$ & 0.000 & 0.4486 \\
+        \bottomrule
+    \end{tabularx}
+\end{table}
+
+\begin{table}[htbp]
+    \centering
+    \caption{Composition of the nine-layer \textit{Arabidopsis thaliana} multiplex network used for GRIN filtering and MENTOR module derivation. Each layer encodes a distinct line of biological evidence over a shared pool of 26,605 genes; ``Genes'' is the number of genes with at least one edge in that layer, and layers are ordered by edge count. All layers are undirected, unweighted, and contribute equally to network propagation, giving 918,640 edges in total. Network identifiers follow the exascale-generated \textit{A.\ thaliana} network collection.}\label{tbl:multiplex-layers}
+    \small
+    \setlength{\tabcolsep}{6pt}
+    \renewcommand{\arraystretch}{1.1}
+    \begin{tabularx}{\textwidth}{@{}l >{\raggedright\arraybackslash}X l c c@{}}
+        \toprule
+        Layer & Source network & Network ID & Genes & Edges \\
+        \midrule
+        PP & PPI-6merged & \texttt{AT-UU-PP-00-AA-01} & 19,191 & 317,787 \\
+        RP & Regulation-Plantregmap & \texttt{AT-UU-RP-03-AA-01} & 16,014 & 167,851 \\
+        PX & PEN-Diversity & \texttt{AT-UU-PX-01-AA-01} & 19,975 & 145,407 \\
+        KS & Knockout Similarity & \texttt{AT-UU-KS-00-AA-01} & 1,841 & 94,952 \\
+        GA & Coex Gene-Atlas & \texttt{AT-UU-GA-01-AA-01} & 7,683 & 84,959 \\
+        PY & iRF-LOOP Methylation & \texttt{AT-UU-PY-01-LF-01} & 13,314 & 71,287 \\
+        RX & Metabolic-AraCyc & \texttt{AT-UU-RX-00-AA-01} & 2,857 & 21,524 \\
+        DU & CoEvolution-DUO 0.67 trans & \texttt{AT-UU-DU-67-AA-01} & 2,283 & 13,514 \\
+        RE & Regulation-ATRM & \texttt{AT-UU-RE-00-AA-01} & 789 & 1,359 \\
+        \bottomrule
+    \end{tabularx}
+\end{table}
