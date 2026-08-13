@@ -12,7 +12,7 @@
 % 1. thesis/dissertation
 % 2. monochrome
 % 3. all options provided by the report class
-\documentclass[thesis,letterpaper,12pt]{utthesis} % thesis, one side
+\documentclass[dissertation,letterpaper,12pt]{utthesis}
 % some alternatives are:
 %\documentclass[thesis,monochrome,letterpaper,12pt]{utthesis} %thesis, one side, monochrome text
 %\documentclass[thesis,twoside,letterpaper,12pt]{utthesis} % thesis, two side
@@ -21,31 +21,33 @@
 % \documentclass[dissertation,letterpaper,12pt]{utthesis} . . .
 \renewcommand{\baselinestretch}{1.5} % line Spacing
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% TO DO: FILL IN YOUR INFORMATION BELOW - READ THIS SECTION CAREFULLY
+% PROPOSAL METADATA
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \title{Deep Learning for Biological Discovery Across Omics Layers: From Phenomics to Agentic Reasoning}	       % title of thesis/dissertation
 \author{Peter Kruse}                % author's name
 \copyrightYear{2026}            % copyright year of your thesis/dissertation
-\graduationMonth{June}         % month of graduation of your thesis/dissertation
+\graduationMonth{August}         % month of proposal
 \majorProfessor{Dr. Daniel Jacobson}	    % advisor's nameb
 \keywords{Systems Biology, Deep Learning, Genetics, Computer Vision, Large Language Models, Multi-Omics}	% keywords (optional) separated by commas - these are used in the PDF file properties
 \viceProvost{Dixie L. Thompson} % vice provost name
 \major{Data Science Engineering}					% major: Computer Science, Biology, Mathematics, ...
 \degree{Doctor of Philosophy}	    			% degree: Doctor of Philosophy, Master of Science, Master of Arts, ...
-\college{College}               % college: name of your college
-\dept{Department}				% department: name of your department
-\university{The University  of Tennessee, Knoxville}	% school name
+\college{Intercollegiate}
+\dept{Bredesen Center for Interdisciplinary Research and Graduate Education}
+\university{The University of Tennessee, Knoxville}	% school name
 % THIS TEMPLATE ACCOMMODATES UP TO 5 COMMITTEE MEMBERS - ENTER ONLY THE NAMES OF THE MEMBERS ON YOUR COMMITTEE
-\numberOfCommitteeMembers{3} % enter the number of committee members
+\numberOfCommitteeMembers{4} % enter the number of committee members
 \committeeMemberA {Dr. Daniel Jacobson}	% name of committee chair
 \committeeMemberB {Dr. Michael Langston}	% name of second committee member
-\committeeMemberC {Dr. Katherine Schuman}	% ... you get the trend!
-\committeeMemberD {Dr. Hairong Qi}	% if your committee has less than 4 members, you do not need to edit the
+\committeeMemberC {Dr. Katherine Schuman}	% third committee member
+\committeeMemberD {Dr. Hairong Qi}	% fourth committee member
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % LOAD SOME USEFUL PACKAGES
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \usepackage{nomencl}                    % produces a nomenclature
 \usepackage{float}                      % figure floats
+\usepackage[T1]{fontenc}               % reliable accented text and small caps
+\usepackage[utf8]{inputenc}
 \usepackage{csquotes}                   % context-sensitive quotes; load before biblatex (provides displayquote)
 \usepackage[style=numeric]{biblatex}
 \addbibresource{references/references-dissertation.bib} 
@@ -60,28 +62,23 @@
 \usepackage{booktabs}                   % professional looking tables
 % \usepackage[config, labelfont={bf}]{caption,subfig} % removed: subfig clashes with subcaption (used for \begin{subfigure}); caption is loaded below
 \usepackage{mathrsfs}                   % additional math scripts
-\usepackage[utf8]{inputenc}
-\usepackage{authblk}
 \usepackage{setspace}
 \usepackage{algorithm}                  % float wrapper for \begin{algorithm}
 \usepackage{algpseudocode}              % algorithmicx pseudocode (\State, \For, ...); replaces old algorithmic
-\usepackage{graphicx}
 \usepackage{textcomp}
 \usepackage{xcolor}
-\usepackage{multicol}
-\usepackage{listings}
 \usepackage[labelfont=bf]{caption}
 \usepackage{subcaption}
 \usepackage{hyperref}
-\usepackage{lineno}
 % \usepackage{subfigure} % removed: deprecated, clashes with subcaption (\c@subfigure already defined); unused (no \subfigure{} commands)
-\usepackage{booktabs}
 \usepackage{tabularx}
+\usepackage{longtable}
 \usepackage{array}
 \usepackage{makecell}                   % \makecell for multi-line table cells (chapter 3)
-\newcolumntype{Y}{>{\centering\arraybackslash}X} % centered tabularx column (chapter 4 tables)
-
-\newcommand{\todocite}[1]{\textcolor{red}{[#1]}}
+\usepackage{tikz}                      % chapter 4 architecture and workflow figures
+\usetikzlibrary{arrows.meta,backgrounds,calc,fit,positioning,shapes.geometric}
+\input{figures/mentor-rl/mentor-rl-style}
+\newcolumntype{Y}{>{\raggedright\arraybackslash}X} % flexible text column (chapter 4 tables)
 
 % add a proposal title page edit
 \makeatletter
@@ -107,6 +104,7 @@
 \def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
     T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
 \captionsetup{justification=centering}
+\setlength{\emergencystretch}{2em}
 
 \hypersetup{
     colorlinks=true,
@@ -167,9 +165,4 @@
     \makeAppendixPage   % make the appendix title page - can be edited in utthesis.cls
     \appendix 
     \include{back-matter/appendix-1}
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    % A VITA IS REQUIRED
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    \addToTOC{Vita}
-    \include{back-matter/vita}
 \end{document}

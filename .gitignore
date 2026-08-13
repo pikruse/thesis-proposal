@@ -11,6 +11,8 @@
 *.lof
 *.lot
 *.nlo
+*.nls
+*.ilg
 *.run.xml
 CLAUDE.md
 AGENTS.md

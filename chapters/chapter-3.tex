@@ -13,7 +13,6 @@ However, when a wide range of modeling strategies were evaluated head-to-head in
 
 We designed this study to test whether a unified marker and environment representation could outperform branch-based late fusion for G$\times$E prediction. We trained the FullTransformer with the 2024 G2F competition data and encoded marker and environmental tokens in one transformer sequence \cite{g2f-2024-competition,attention}. A sparse MoE block supported token-level specialization, and an affine head corrected absolute scale while it preserved within-environment rank. We reviewed 427 run records and selected completed comparisons of fusion architecture, objective choice, and affine calibration. The selected model achieved a macro environment PCC of $0.423$ and MSE of $55.40$; this result corresponds to sixth place in the retrospective comparison. Future work will test whether new data and feature representations can close the gap to the competition-winning PCC of $0.45$.
 
-%%% METHODS
 \section{Methods}
 \subsection{Data}
 Data for this model were obtained through the 2024 Genomes to Fields (G2F) Maize Prediction Competition \cite{g2f-2024-competition}. The dataset included trait, metadata, soil, weather, genotype, and environmental covariate files spanning the 2014-2024 growing seasons, with yield labels for 2014-2023 released prior to the competition, and 2024 labels made publicly available after the competition's end. The training dataset contained 173,960 trait rows across 272 environments; 164,921 of those rows had finite yield. The 2024 test dataset contained 10,057 submission-template rows across 23 environments. Raw genotype data contained 5,899 hybrid records with 2,425 single nucleotide variant (SNV) marker loci. Environmental data contained 654 numeric environmental covariates (ECs), along with 16 daily weather variables and separate metadata and soil tables. 
@@ -23,7 +22,7 @@ The data were collected across many sites, years, and management regimes, so the
 \subsubsection{Marker Data}\label{sec:ch3-marker-preproc}
 The raw numerical genotype table contained 5,899 hybrid records and 2,425 candidate SNV loci. The raw marker files stored these states as $0$, $0.5$, and $1$, so at each locus, we encoded alleles by dosage according to the scheme in Table~\ref{tab:ch3-vocabulary} to make them compatible with tokenization. A value of $2$ represents two major alleles, a value of $1$ represents a heterozygous pair of alleles (major-minor), and a value of $0$ represents two minor alleles. 
 
-\begin{table}[h!]
+\begin{table}[htbp]
     \centering
     \renewcommand{\arraystretch}{1.5}
     \begin{tabular}{@{} l c @{}}
@@ -71,7 +70,7 @@ For the reported model, each sample was represented by a sequence of length $2{,
 Because yield prediction depends on the complete input rather than autoregressive next-token prediction, no causal attention mask was applied. Bidirectional attention \cite{bert} allowed every marker and environmental token to attend to every other position, enabling direct marker--environment interactions within the shared representation.
 
 \subsubsection{Transformer Encoder with Mixture-of-Experts}
-The reported FullTransformer used one encoder block with hidden width $256$ and four bidirectional attention heads. The block followed the pre-layer-normalized residual organization used in GPT-2 \cite{gpt2}, with layer normalization applied before each sublayer \cite{layernorm}. The normalized token representations were passed through multi-head self-attention, and dropout with rate $0.15$ was applied to the attention output before it was added to the block input through a residual connection \cite{resnet}. The updated token representations were normalized again and passed through the MoE sublayer, whose output received the same dropout before the second residual addition.
+The reported FullTransformer used one encoder block with hidden width $256$ and four bidirectional attention heads. The block followed the pre-layer-normalized residual organization used in GPT-2 \cite{gpt2}, with layer normalization applied before each sublayer \cite{layernorm}. The normalized token representations were passed through multi-head self-attention, and dropout with rate $0.15$ was applied to the attention output before it was added to the block input through a residual connection \cite{he2016deep}. The updated token representations were normalized again and passed through the MoE sublayer, whose output received the same dropout before the second residual addition.
 
 The reported encoder replaced the conventional dense feed-forward sublayer with a sparse MoE layer \cite{shazeer2017outrageously}. A learned linear router produced eight logits, one for each routed expert, for every sequence token, including \texttt{[CLS]}, marker, and environmental tokens. The two routed experts with the highest logits were selected independently for each token, and a softmax over those logits produced weights used to combine their outputs. Each routed expert was a two-layer FFN with hidden width $256$, GELU activation, and output width $256$. An additional shared expert with the same structure processed every token, and its output was added to the weighted sum of routed-expert outputs. During training, an auxiliary load-balancing loss with weight $0.01$ discouraged routing collapse by encouraging routing mass to remain distributed across the eight routed experts. This design increased conditional capacity while activating only two routed experts, in addition to the shared expert, for each token.
 
@@ -201,7 +200,6 @@ Finally, we compared the effect of the affine calibration head on absolute yield
 
 Two runs of the environment PCC configuration completed at the same commit under identical settings. We report both and treat their difference as an estimate of run-to-run variation. Every other comparison arm is a single run, so this study cannot estimate variation across random initializations. The complete experiment export contained 427 run records, of which 374 finished successfully. The accompanying machine-readable manifest records every exported run, its provenance, completion status, reported metrics, and manuscript disposition. Only completed comparisons from the legacy data scheme entered the primary Results; experiments that used the later data-generation or tokenization schemes are designated as future work.
 
-%%% RESULTS
 \section{Results}
 
 \subsection{Performance on the 2024 Retrospective Benchmark}
@@ -216,7 +214,7 @@ Motivated by this rank--scale trade-off, we compared a near-matched uncalibrated
 
 The replicate pair described in Section~\ref{sec:ch3-comparisons} bounds how much of this variation is run-to-run noise. Its two runs agreed to three decimals on macro environment PCC at $0.423$, and gave macro environment MSE values of $100.57$ and $101.06$. These differences, $0.0000039$ in PCC and $0.50$ in MSE, provide the study's only estimate of run-to-run variation. On that scale, the $45.66$ MSE improvement from calibration is about 90 times the replicate difference. The corresponding PCC difference of $0.0000378$ amounts to $0.009\%$ of the score. Every other comparison arm is a single run. These results should therefore be interpreted as descriptive model-development comparisons rather than replicated estimates of individual-component effects. Table~\ref{tab:ch3-ablation-summary} reports the highlighted comparisons at full precision.
 
-\begin{table}[h!]
+\begin{table}[htbp]
     \centering
     \footnotesize
     \begin{tabular}{@{}l l c c@{}}
@@ -252,7 +250,7 @@ We also examined the upper and lower ends of the environment-level PCC distribut
 \subsection{Competition Context}
 To contextualize the reported FullTransformer result, we compared it with the leading competing entries on the 2024 G2F G$\times$E Prediction Competition EvalAI leaderboard \cite{g2f-2024-evalai-leaderboard}. The competition ranked submissions using the macro environment PCC, the same primary metric used in our retrospective benchmark \cite{g2f-2024-competition}. Several leaderboard entries marked as \enquote{not competing} were omitted from this comparison. The FullTransformer achieved a PCC of $0.423$, which would have ranked sixth among the competing entries shown in Table~\ref{tab:ch3-external-results}. This score was $0.003$ lower than the fifth-place score and $0.027$ lower than the winning score. Because the FullTransformer was evaluated after the competition and was not submitted, this placement is a retrospective comparison rather than an official result. Its proximity to the fifth-place score nevertheless indicates that the architecture was competitive with the leading competition entries.
 
-\begin{table}[h!]
+\begin{table}[htbp]
     \centering
     \footnotesize
     \begin{tabularx}{\textwidth}{@{}c X c@{}}
@@ -272,7 +270,6 @@ To contextualize the reported FullTransformer result, we compared it with the le
 \end{table}
 
 
-%%% DISCUSSION
 \section{Discussion}
 This study tested whether a unified representation of marker and environmental tokens could support maize G$\times$E yield prediction more effectively than branch-based late fusion. Our results support early cross-modal interaction as a useful design choice and show that prediction rank and absolute scale require distinct treatment. The final FullTransformer combined these choices and achieved a competitive retrospective macro environment PCC of $0.423$ on the 2024 competition benchmark.
 

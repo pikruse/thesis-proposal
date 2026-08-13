@@ -1,24 +1,24 @@
-
-\chapter{Experimental Results}
-
-\section{Experiment 1}
-Results from Experiment 1 go here.
-
-\section{Experiment 2}
-Results from Experiment 2 go here.
-
 \chapter{Supplementary Tables for Chapter~\ref{ch2:pennycress}}
 
-\begin{table}[htbp]
-    \centering
-    \caption{Broad-sense heritability ($H^2$) of all 52 U-Net-derived pod traits in the dryland environment, ordered by $H^2$. Estimates are from a linear mixed model with genotype as a random effect, fit on 25 replicated genotypes, and significance $p$ is from a restricted likelihood-ratio test on the genotype variance component ($H_0\!:\sigma^2_G = 0$). Traits marked $^{\ast}$ fell below the $H^2 \geq 0.05$ screen and were excluded from association testing; the remaining 34 were carried into GWAS and are reported with their GWAS status in Table~\ref{tab:ch2-heritability}.}\label{tbl:heritability-all}
-    \small
-    \setlength{\tabcolsep}{6pt}
-    \renewcommand{\arraystretch}{1.1}
-    \begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}X c c@{}}
-        \toprule
-        Trait & $H^2$ & Significance ($p$) \\
-        \midrule
+\begingroup
+\small
+\setlength{\tabcolsep}{6pt}
+\renewcommand{\arraystretch}{1.05}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{0.57\textwidth} c c@{}}
+    \caption{Broad-sense heritability ($H^2$) of all 52 U-Net-derived pod traits in the dryland environment, ordered by $H^2$. Estimates are from a linear mixed model with genotype as a random effect, fit on 25 replicated genotypes, and significance $p$ is from a restricted likelihood-ratio test on the genotype variance component ($H_0\!:\sigma^2_G = 0$). Traits marked $^{\ast}$ fell below the $H^2 \geq 0.05$ screen and were excluded from association testing; the remaining 34 were carried into GWAS and are reported with their GWAS status in Table~\ref{tab:ch2-heritability}.}\label{tbl:heritability-all}\\
+    \toprule
+    Trait & $H^2$ & Significance ($p$) \\
+    \midrule
+    \endfirsthead
+    \multicolumn{3}{c}{\tablename\ \thetable\ (continued)}\\
+    \toprule
+    Trait & $H^2$ & Significance ($p$) \\
+    \midrule
+    \endhead
+    \midrule
+    \endfoot
+    \bottomrule
+    \endlastfoot
         envelope-to-wing area ratio & 0.461 & $<0.0001$ \\
         envelope-to-total area ratio & 0.423 & 0.0002 \\
         wing-to-envelope area ratio & 0.409 & 0.0003 \\
@@ -71,9 +71,8 @@ Results from Experiment 2 go here.
         wing RGB red$^{\ast}$ & 0.000 & 1.0000 \\
         wing-to-seed perimeter ratio$^{\ast}$ & 0.000 & 1.0000 \\
         wing HSV brightness$^{\ast}$ & 0.000 & 0.4486 \\
-        \bottomrule
-    \end{tabularx}
-\end{table}
+\end{longtable}
+\endgroup
 
 \begin{table}[htbp]
     \centering
