@@ -27,33 +27,45 @@ chapters/
   chapter-3.tex              # Maize genomic prediction (GxE transformer)
   chapter-4.tex              # MENTOR-RL: agentic reasoning over biological networks
 front-matter/                # abstract, acknowledgements, dedication, nomenclature, quote
-back-matter/                 # appendix-1.tex, vita.tex
+back-matter/                 # appendix-1.tex (Ch2 supplementary tables), vita.tex
 figures/
   eps/ pdf/                  # generic template figures
   pennycress-unet/           # Chapter 2 figures
   gxe-tf/                    # Chapter 3 figures
-  mentor-rl/                 # Chapter 4 figures
+  mentor-rl/                 # Chapter 4 figures — TikZ .tex sources, not images
   lit-review/                # Chapter 1 figures
 references/
   references-dissertation.bib
+supplement/                  # README.md + ablation_run_manifest.csv (Ch 3 run inventory)
 ```
  
 `\graphicspath` already includes `figures/`, `figures/eps/`, `figures/pdf/` — reference
 figures by filename, and put new chapter figures in the matching `figures/<topic>/` subfolder.
+ 
+**Chapter 4 figures are TikZ, not graphics.** `figures/mentor-rl/*.tex` are standalone TikZ
+pictures pulled in as `\resizebox{\linewidth}{!}{\input{figures/mentor-rl/<name>}}`, not
+`\includegraphics`. Their shared style file, `figures/mentor-rl/mentor-rl-style.tex`, is
+`\input` in the preamble of `my-dissertation.tex` — a new Ch 4 figure should reuse those
+styles rather than define its own colors.
+
+`supplement/ablation_run_manifest.csv` is a **derived** artifact: it is regenerated from the
+G×E paper repo's W&B export via `scripts/build_ablation_manifest.py` (command in
+`supplement/README.md`). Do not hand-edit rows.
  
 ## Building
  
 Canonical build is the makefile:
  
 ```
-make          # pdflatex -> bibtex -> pdflatex -> pdflatex
+make           # pdflatex -> makeindex (nomenclature) -> biber -> pdflatex -> pdflatex
 make clean     # removes aux/bbl/log/etc.
 ```
  
 `latexmk -pdf my-dissertation` also works locally. Bibliography uses **biblatex**
-(`[style=numeric]`) loaded via `\addbibresource`; citations render as IEEE-style numeric
-brackets. If citations don't resolve, the bib backend (biber vs. bibtex) may need attention —
-flag it rather than rewriting the bib setup.
+(`[style=numeric]`) with **biber** as the backend — this is settled, do not switch it to
+bibtex. Citations render as IEEE-style numeric brackets. The `makeindex ... -s nomencl.ist`
+step builds `front-matter/nomenclature`; if a new abbreviation does not appear, it is usually
+that step, not the bibliography.
  
 Always confirm the document still compiles after edits before considering a change done.
  
@@ -64,18 +76,48 @@ Always confirm the document still compiles after edits before considering a chan
   section is the payload — it carries the three subsections that ground Ch 2, Ch 3, and Ch 4.
   See "Chapter 1 conventions" below; the IMRaD rules do **not** apply to this chapter.
 - **Ch 2 — Pennycress (*Thlaspi arvense*) seed pod phenotyping.** Image-based deep learning
-  segmentation (U-Net) linked to population genetics (GWAS) and network biology (PEN → MENTOR).
-- **Ch 3 — Maize genomic prediction.** `FullTransformer`: marker dosage tokens and
+  segmentation benchmarked across CNN / transformer / foundation-model architectures
+  (boundary-down-weighted U-Net wins), 52 tissue-resolved phenotypes over 12,253 pods from
+  768 accessions, then carried into biology via heritability screening → GWAS → **PPN** →
+  **iRF-LOOP** → **GRIN** pruning → **MENTOR** modules → **MENTOR-IA** interpretation.
+- **Ch 3 — Maize genomic prediction.** `FullTransformer`: 2,224 marker dosage tokens and 702
   environmental covariate tokens in one sequence, a Top-K mixture-of-experts feed-forward
-  layer, and an environment-affine calibration head (G×E).
+  layer, and an environment-affine calibration head (G×E). Trained on 143,050 pre-2024 G2F
+  plot records; evaluated retrospectively on 9,486 records from the 2024 competition cohort.
+  **Headline numbers are in flux** — see "Live numbers" below before quoting a rank.
 - **Ch 4 — MENTOR-RL.** Agentic reasoning system for mechanistic hypothesis generation over
-  biological networks; trained on OLCF Frontier.
+  biological networks; trained on OLCF Frontier. Two-stage: Stage 1 is a supervised
+  world-model curriculum over a multiplex lattice; Stage 2 post-trains a tool-using agent
+  with DPO and GRPO against deterministic, schema-grounded rewards. Chapter-internal names:
+  **MENTOR-EV** (the dendrogram/hierarchy view) and **RWR-LOE** (seeded random-walk
+  neighborhoods). This is the only *unexecuted* chapter — see its genre carve-out below.
+
+## Live numbers (verify before quoting)
+
+These move between drafts, and stale copies of them are the most common error in this repo.
+Check the chapter source rather than repeating a number from memory or from this file.
+
+- **Ch 3 competition placement.** `chapter-3.tex` (`Competition Context`,
+  `tab:ch3-external-results`) and the Ch 3 paragraph of `front-matter/abstract.tex` currently
+  say macro-environment PCC **0.423**, MSE **55.40**, **sixth** place, 0.027 behind a winning
+  0.45. **As of 2026-08-17 a newer G2F competition manuscript revises the comparison table and
+  the placement changes.** Any of rank, gap-to-winner, the table rows, the Discussion opener,
+  and the Executive Summary may need to change together — they are four separate copies of the
+  same claim. Do not update one without the others.
+- **Ch 2 counts** (12,253 pods / 768 accessions / 347 annotated pods / 52 traits / 34 traits
+  past the H² screen / 85.58% mIoU) appear in both `chapter-2.tex` and the Executive Summary.
+- **Ch 4 preliminary S0 result** (45.6% → 85.9% hard-subset accuracy under atomic
+  tokenization) appears in `sec:ch4-prelim` and the Executive Summary.
+
 ## Genre conventions (IMRaD manuscript chapters)
  
-Each research chapter is written as close to a **submission-ready research manuscript** as
-possible, in strict **IMRaD** form, with one added subsection. A chapter is not a planning
-document, a work plan, or a collection of notes; it is a manuscript that happens to be read
-by a committee. This mirrors the contract in the source paper repos — see
+**Applies to Ch 2 and Ch 3 only.** Ch 1 is a literature review and Ch 4 is a proposal chapter;
+both have their own contracts below.
+
+Each *completed* research chapter is written as close to a **submission-ready research
+manuscript** as possible, in strict **IMRaD** form, with one added subsection. A chapter is not
+a planning document, a work plan, or a collection of notes; it is a manuscript that happens to
+be read by a committee. This mirrors the contract in the source paper repos — see
 `latex/gxe-transformer-paper/AGENTS.md` for the fully worked version.
  
 **Required chapter structure:**
@@ -113,6 +155,44 @@ Everything outside that final subsection reads as a completed study in past tens
   contributions statement.
 - Keep chapters **independent**: do **not** add forward-references to Chapter 4 / MENTOR-RL
   from the Chapter 2 introduction.
+
+## Chapter 4 conventions (proposal chapter)
+
+Chapter 4 describes work that has **not been executed**, so IMRaD does not apply and past tense
+would be a misrepresentation. Its skeleton is:
+
+```
+Introduction
+Proposed Methods          # future/present tense: "we define", "the agent must"
+  Multiplex Lattice / Context Ontology / Three Structural Views
+  Stage 1: Multiplex World Model
+    Deterministic Runtime and Tool Contract / Supervised Curriculum
+    Corpus Generation and Validation / Splits and Leakage Control
+  Stage 2: Mechanistic Agent
+    Agent Loop and Structured State / Task Cases and Targets / Task Corpora
+    Trajectory Generation / Reward Design / Terminal Reward Decomposition for GRPO
+  Training Pipeline and Curriculum
+  Evaluation                # Stage 1 eval, Stage 2 eval, Ablation Studies
+Expected Results          # Expected Empirical / Expected Behavioral / Deliverables
+Discussion
+  Preliminary Results       # the ONLY place completed Ch 4 work is reported, in past tense
+  Plan of Work
+  Limitations and Future Work
+```
+
+**Rules specific to this chapter:**
+
+- **Tense is load-bearing.** Everything outside `sec:ch4-prelim` is proposed and stays in
+  future or timeless present. `sec:ch4-prelim` is the one past-tense subsection — the S0
+  tokenization result and the Frontier infrastructure runs. Do not let executed and proposed
+  work blur together in either direction.
+- **`Expected Results` is not `Results`.** It states what an outcome would mean, not what was
+  observed. No numbers there that are not already in `sec:ch4-prelim`.
+- **Do not assert a base model or parameter count** beyond what the chapter states. It names
+  gpt-oss-120b only in the infrastructure context.
+- Stage 2 is the densest part of the chapter (~3,350 words, 10 display equations across six
+  subsubsections) and is the current cleanup target.
+
 ## Chapter 1 conventions (literature review)
 
 Chapter 1 is the one chapter outside the IMRaD contract above. It is a **thesis-level
@@ -159,28 +239,40 @@ problem-specific inductive biases — follow from the prior work rather than be 
 
 **Open work, in order:**
 
-1. Finish the line-level pass. Known remaining items: `sec:ch1-transformer` re-explains ViT in
-   one clause without a `\ref` callback to `sec:ch1-tfseg`, where it is already treated
-   substantively; the Bahdanau/Sutskever chronology in `sec:ch1-lm-pretransformer` says "less
-   than a year later" when Bahdanau's preprint actually preceded Sutskever's; italics-on-first-use
-   is applied to the biology terms but skipped for several others; trailing whitespace on
-   paragraph-final lines.
-2. Decide on `hinton2012improving`. The ILSVRC-yields list in `sec:ch1-imagenet` currently
-   attributes dropout to `srivastava2014dropout` (2014) in a passage about what the competition
-   produced in 2012. The key is **not** in `references-dissertation.bib`; adding it means adding
-   the entry here *and* in the `latex/lit-review` copy.
+1. Line-level pass — mostly closed as of 2026-08-17. Done: the ViT callback in
+   `sec:ch1-transformer` now points at `sec:ch1-tfseg`; the Bahdanau/Sutskever chronology reads
+   "In concurrent work" (both preprints are September 2014, Bahdanau's first); trailing
+   whitespace stripped. **Still open:** italics-on-first-use is applied to the biology terms but
+   skipped for several others.
+2. `hinton2012improving` — **resolved 2026-08-17.** The entry was added to
+   `references-dissertation.bib` and verified against the arXiv record (arXiv:1207.0580,
+   submitted 3 July 2012; Hinton, Srivastava, Krizhevsky, Sutskever, Salakhutdinov).
+   `sec:ch1-imagenet` now attributes dropout to it rather than to `srivastava2014dropout` in the
+   2012 ILSVRC passage — the preprint predates AlexNet's NeurIPS appearance, so it is the
+   citation that work actually had. `srivastava2014dropout` remains correct where
+   `sec:ch1-deeplearning` treats dropout generally. **The bib entry has not been mirrored into
+   `latex/lit-review` yet** — do that with the chapter sync.
 3. Close the setup gaps below.
-4. Sync `chapter-1.tex` back from `latex/lit-review`.
+4. Sync `chapter-1.tex` **from this repo out to `latex/lit-review`** — as of 2026-08-17 the
+   proposal copy is the newer one. It leads on the opening paragraph, the `dl-timeline` caption,
+   two `sec:ch1-cybernetics` paragraphs, and the network-methods material in `sec:ch1-llmmech`.
+   The direction was the reverse in earlier drafts; check which copy is ahead before syncing.
 
-**Coverage gaps — Ch 1 as setup for the later chapters:**
+**Coverage gaps — Ch 1 as setup for the later chapters** (counts re-verified 2026-08-17):
 
-- **Ch 2's network-biology half is not set up.** `chapter-2.tex` uses GWAS (23×), MENTOR (27×),
-  PPN (13×), and iRF-LOOP (8×). `chapter-1.tex` mentions GWAS once in passing, mentions MENTOR
-  only inside `sec:ch1-llmmech` (the Chapter 4 subsection), and never mentions PPN or iRF-LOOP.
-  `sec:ch1-phenotyping` grounds only the segmentation half of Chapter 2.
-- **Ch 3's calibration is not set up.** `chapter-3.tex` uses "calibration" 20× and the
-  environment-affine calibration head is one of its stated contributions; `chapter-1.tex` never
-  introduces calibration as a concept or a problem.
+- ~~**Network-based methods have no home in Ch 1.**~~ **Closed 2026-08-17.** `sec:ch1-llmmech`
+  was renamed `Mechanistic Interpretation of Biological Networks` and now runs: interactome and
+  hierarchy → GWAS returns loci not mechanism → networks and iRF-LOOP construction → RWR
+  propagation and GRIN refinement → MENTOR modules → the reading gap → the language model half →
+  Chapter 4. Each in-house tool is paired with its external antecedent (`tong2006fast`,
+  `kohler2008walking`, `vanunu2010associating`, `cowen2017network`, `uffelmann2021genome`) so the
+  section reads as a review rather than a tour of Jacobson-lab software. **Keep it that way** —
+  do not add an in-house method here without the external principle it instantiates.
+- **Ch 3's calibration is not set up.** The last remaining coverage gap. `chapter-3.tex` uses
+  "calibration" 20× and the environment-affine calibration head is one of its stated
+  contributions; `chapter-1.tex` never introduces calibration as a concept or a problem.
+  `sec:ch1-genomicpred` is the place for it, and the rank-versus-absolute-scale framing there
+  should match whatever the G×E paper ends up leading with.
 
 **Known accuracy traps in this chapter** (fix if encountered; do not reintroduce):
 
@@ -208,7 +300,17 @@ problem-specific inductive biases — follow from the prior work rather than be 
 - **"nearest annotated genes"** for GWAS-to-gene mapping.
 - First use of a technical term in *italics* (not bold).
 - IEEE numeric bracket citations.
-- Maintain consistent **PEN** vs. **PPN** usage (don't mix the two for the same object).
+- **PEN and PPN are different objects — do not treat them as variants of one name.** A *predictive
+  expression network* (PEN) is built by iRF-LOOP over expression data, which is the published
+  application in `cliff2019high`; a *predictive phenotype network* (PPN) is the same method applied
+  to extracted phenotypes, which is what Chapter 2 does. Both are defined in
+  `front-matter/nomenclature.tex`. Chapter 2 correctly uses PPN throughout (12×) and PEN nowhere,
+  because its networks are over phenotypes. When Chapter 1 describes iRF-LOOP generically, PEN is
+  the right term; when it points forward to Chapter 2, PPN is. Never swap one for the other.
+- **System-name casing is inconsistent across chapters and not yet settled.** Ch 2 writes plain
+  uppercase `MENTOR` / `MENTOR-IA`; Ch 4 writes `\textsc{Mentor-RL}`, `\textsc{Mentor-EV}`,
+  `\textsc{Mentor}`. Match the chapter you are editing; do not normalize across chapters as a
+  drive-by change (it is a whole-document pass and belongs on the polish list).
 ## LaTeX conventions
  
 - **Label scheme (chapters):** every label carries its chapter number, so labels never collide
@@ -216,8 +318,10 @@ problem-specific inductive biases — follow from the prior work rather than be 
   `sec:ch3-training`, `fig:ch2-pc-ppn`, `tab:ch4-tools`, `eq:ch3-envpcc`, `alg:ch3-eval-pcc`.
   Chapter labels themselves are `ch2:pennycress`, `ch3:gxe`, `ch4:mentor-rl`, `ch1:lit-review`.
   Use `tab:` (not `tbl:`) and `eq:` (not `eqn:`). Front-matter and back-matter labels are
-  outside this scheme. **When syncing a chapter from its paper repo, re-apply this prefix** —
-  paper labels arrive unscoped.
+  outside this scheme — `back-matter/appendix-1.tex` legitimately carries `tbl:heritability-all`
+  and `tbl:multiplex-layers`, and Chapter 2 references them across that boundary. Leave them.
+  **When syncing a chapter from its paper repo, re-apply this prefix** — paper labels arrive
+  unscoped.
 - Put a non-breaking space `~` before every `\cite{}` and `\ref{}` (e.g. `as shown in~\ref{...}`).
 - A `\todocite{...}` command is defined (renders red, bracketed). **Use `\todocite{description}`
   for any missing citation — never invent a citation key or fabricate a reference.**
@@ -267,8 +371,23 @@ When touching the Chapter 2 analysis data (heritability tables, snp2gene files, 
   exactly.
 - The authoritative SNP-to-gene file is the one suffixed `..._FINAL.txt`; prefer it over earlier
   variants.
-## Related code repos (not in this repo)
- 
+## Related repos (not in this repo)
+
+**Source manuscript repos.** Each research chapter is a genre-adapted fork of a standalone
+paper repo. Chapters are synced *from* these; when syncing, re-apply the `chN-` label prefix and
+preserve the proposal-genre additions (the `Limitations and Future Work` subsection, the
+Executive Summary's claims, and any cross-chapter `\ref`s) rather than overwriting them.
+
+- `latex/pennycress-unet-paper` — Chapter 2 source.
+- `latex/gxe-transformer-paper` — Chapter 3 source; also holds the fully worked IMRaD contract
+  in its own `AGENTS.md`, and the `scripts/build_ablation_manifest.py` that regenerates
+  `supplement/ablation_run_manifest.csv`.
+- `latex/mentor-rl-methods` — Chapter 4 source.
+- `latex/lit-review` — Chapter 1 source. `chapter-1.tex` is edited here *and* there; changes
+  need to land in both, and the bib entries do too.
+
+**Code.**
+
 - `pennycress-unet` — the Chapter 2 segmentation codebase (note: *not* `pennycress-segmentation`).
 ---
  
