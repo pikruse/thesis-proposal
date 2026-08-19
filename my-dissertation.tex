@@ -80,6 +80,19 @@
 \input{figures/mentor-rl/mentor-rl-style}
 \newcolumntype{Y}{>{\raggedright\arraybackslash}X} % flexible text column (chapter 4 tables)
 
+% --- review annotations -------------------------------------------------
+% \todocite{description} marks a missing citation (red brackets). Never invent
+% a citation key; use this instead.
+\newcommand{\todocite}[1]{\textcolor{red}{[#1]}}
+
+% \comment{note} is Peter's channel for review notes in the source (blue, small
+% sans, bracketed). Flip to \showcommentsfalse for a committee build; the notes
+% stay in the source either way.
+\newif\ifshowcomments
+\showcommentstrue
+\newcommand{\comment}[1]{\ifshowcomments\textcolor{blue}{\textsf{\small\,[#1]}}\fi}
+% ------------------------------------------------------------------------
+
 % add a proposal title page edit
 \makeatletter
 \renewcommand{\makeTitlePage}{%

@@ -323,13 +323,19 @@ problem-specific inductive biases — follow from the prior work rather than be 
   **When syncing a chapter from its paper repo, re-apply this prefix** — paper labels arrive
   unscoped.
 - Put a non-breaking space `~` before every `\cite{}` and `\ref{}` (e.g. `as shown in~\ref{...}`).
-- A `\todocite{...}` command is defined (renders red, bracketed). **Use `\todocite{description}`
-  for any missing citation — never invent a citation key or fabricate a reference.**
-- A `\comment{...}` command is defined (renders blue, bracketed, small sans). This is **Peter's**
-  channel for leaving review notes in the source. Treat any `\comment{}` you encounter as an
-  instruction or question directed at you, address it, and delete it once resolved. Do not add
-  `\comment{}` to his prose unprompted — raise points in chat instead. Set `\showcommentsfalse`
-  in `my-dissertation.tex` to hide all comments for a committee build; they stay in the source.
+- **Review-annotation macros live in the `my-dissertation.tex` preamble** under the
+  `--- review annotations ---` banner. They were added 2026-08-18; before that this file
+  documented them but they were never actually defined here, only in the source paper repos
+  (`latex/lit-review/main.tex` has the canonical pair). If a chapter is synced out to a paper
+  repo, check that repo defines them too.
+- A `\todocite{...}` command renders red and bracketed. **Use `\todocite{description}` for any
+  missing citation — never invent a citation key or fabricate a reference.**
+- A `\comment{...}` command renders blue, bracketed, small sans. This is **Peter's** channel for
+  leaving review notes in the source. Treat any `\comment{}` you encounter as an instruction or
+  question directed at you, address it, and delete it once resolved. Do not add `\comment{}` to
+  his prose unprompted — raise points in chat instead. The flag is currently `\showcommentstrue`;
+  set `\showcommentsfalse` for a committee build. Comments stay in the source either way, and
+  `\todocite` is **not** gated by the flag — it always renders.
 - `\textsc{MENTOR}` for the MENTOR system at first mention; this needs `\usepackage[T1]{fontenc}`.
   If small caps render incorrectly, fall back to plain `MENTOR` or `\textbf{MENTOR}` rather than
   shipping broken output.
