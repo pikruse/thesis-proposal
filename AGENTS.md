@@ -240,23 +240,25 @@ problem-specific inductive biases — follow from the prior work rather than be 
 **Open work, in order:**
 
 1. Line-level pass — mostly closed as of 2026-08-17. Done: the ViT callback in
-   `sec:ch1-transformer` now points at `sec:ch1-tfseg`; the Bahdanau/Sutskever chronology reads
-   "In concurrent work" (both preprints are September 2014, Bahdanau's first); trailing
-   whitespace stripped. **Still open:** italics-on-first-use is applied to the biology terms but
-   skipped for several others.
+   `sec:ch1-transformer` now points at `sec:ch1-tfseg`; trailing whitespace stripped.
+   **Bahdanau/Sutskever chronology — settled 2026-08-20.** `sec:ch1-lm-pretransformer` presents
+   Bahdanau's attention mechanism as responding to Sutskever's seq2seq, and that is Peter's
+   decision: the published Bahdanau (ICLR 2015) cites Sutskever (NIPS 2014), so the venue order
+   supports it. Do not "correct" this back to concurrent-work framing on the basis of the
+   September 2014 preprint dates. Italics-on-first-use **closed 2026-08-20**: `connectionism`,
+   `backpropagation`, `receptive fields`, and `inductive biases` were italicized at their
+   definition sites, joining the biology terms.
 2. `hinton2012improving` — **resolved 2026-08-17.** The entry was added to
    `references-dissertation.bib` and verified against the arXiv record (arXiv:1207.0580,
    submitted 3 July 2012; Hinton, Srivastava, Krizhevsky, Sutskever, Salakhutdinov).
    `sec:ch1-imagenet` now attributes dropout to it rather than to `srivastava2014dropout` in the
    2012 ILSVRC passage — the preprint predates AlexNet's NeurIPS appearance, so it is the
    citation that work actually had. `srivastava2014dropout` remains correct where
-   `sec:ch1-deeplearning` treats dropout generally. **The bib entry has not been mirrored into
-   `latex/lit-review` yet** — do that with the chapter sync.
+   `sec:ch1-deeplearning` treats dropout generally. No mirroring into `latex/lit-review` is needed — see item 4.
 3. Close the setup gaps below.
-4. Sync `chapter-1.tex` **from this repo out to `latex/lit-review`** — as of 2026-08-17 the
-   proposal copy is the newer one. It leads on the opening paragraph, the `dl-timeline` caption,
-   two `sec:ch1-cybernetics` paragraphs, and the network-methods material in `sec:ch1-llmmech`.
-   The direction was the reverse in earlier drafts; check which copy is ahead before syncing.
+4. ~~Sync `chapter-1.tex` out to `latex/lit-review`.~~ **Retired 2026-08-20.** `chapter-1.tex`
+   in this repo is canonical and far enough along that remaining changes are minor. The two
+   copies are no longer kept in sync, and new bib entries do not need mirroring there.
 
 **Coverage gaps — Ch 1 as setup for the later chapters** (counts re-verified 2026-08-17):
 
@@ -268,11 +270,10 @@ problem-specific inductive biases — follow from the prior work rather than be 
   `kohler2008walking`, `vanunu2010associating`, `cowen2017network`, `uffelmann2021genome`) so the
   section reads as a review rather than a tour of Jacobson-lab software. **Keep it that way** —
   do not add an in-house method here without the external principle it instantiates.
-- **Ch 3's calibration is not set up.** The last remaining coverage gap. `chapter-3.tex` uses
-  "calibration" 20× and the environment-affine calibration head is one of its stated
-  contributions; `chapter-1.tex` never introduces calibration as a concept or a problem.
-  `sec:ch1-genomicpred` is the place for it, and the rank-versus-absolute-scale framing there
-  should match whatever the G×E paper ends up leading with.
+- ~~**Ch 3's calibration is not set up.**~~ **Settled 2026-08-20 — deliberately no Ch 1
+  coverage.** Peter decided calibration stays sequestered in Chapter 3, which introduces the
+  environment-conditioned affine head where it is used. `chapter-1.tex` mentions calibration
+  zero times by design. Do not re-raise this as a coverage gap.
 
 **Known accuracy traps in this chapter** (fix if encountered; do not reintroduce):
 
@@ -389,8 +390,8 @@ Executive Summary's claims, and any cross-chapter `\ref`s) rather than overwriti
   in its own `AGENTS.md`, and the `scripts/build_ablation_manifest.py` that regenerates
   `supplement/ablation_run_manifest.csv`.
 - `latex/mentor-rl-methods` — Chapter 4 source.
-- `latex/lit-review` — Chapter 1 source. `chapter-1.tex` is edited here *and* there; changes
-  need to land in both, and the bib entries do too.
+- `latex/lit-review` — Chapter 1's original source. **No longer synced as of 2026-08-20**:
+  `chapter-1.tex` in this repo is canonical, and edits and bib entries do not need to land there.
 
 **Code.**
 
