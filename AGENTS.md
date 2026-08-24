@@ -188,8 +188,14 @@ Discussion
   work blur together in either direction.
 - **`Expected Results` is not `Results`.** It states what an outcome would mean, not what was
   observed. No numbers there that are not already in `sec:ch4-prelim`.
-- **Do not assert a base model or parameter count** beyond what the chapter states. It names
-  gpt-oss-120b only in the infrastructure context.
+- **The base policy is gpt-oss-120b, stated as such (updated 2026-08-20).** `sec:ch4-training-pipeline`
+  says "We use gpt-oss-120b~\cite{gpt-oss} as the base policy"; it is also the model in the
+  infrastructure and tokenization work in `sec:ch4-prelim`. This supersedes the earlier rule that the
+  chapter named no base model. Still do not assert a *parameter count* for the trained policy beyond
+  the 120-billion figure the chapter already gives for the base model, and do not invent training
+  scale numbers the chapter does not state. Because the base policy and the trained policy are the
+  same architecture, a comparison between them is a **trained-versus-untrained ablation**, not a peer
+  baseline; do not list gpt-oss-120b among the frontier comparison models.
 - Stage 2 is the densest part of the chapter (~3,350 words, 10 display equations across six
   subsubsections) and is the current cleanup target.
 
@@ -289,8 +295,9 @@ problem-specific inductive biases — follow from the prior work rather than be 
 - Distributed representations predate `bengio2003neural` — Elman (1990), cited two paragraphs
   later in the same subsection, and LSA. Bengio's contribution is learning them *within a
   language model*, not introducing them.
-- Chapter 4 names no base model or parameter count. Do not assert a model scale for
-  `ch4:mentor-rl` in Chapter 1 that Chapter 4 does not state.
+- Chapter 4 names gpt-oss-120b as its base policy (updated 2026-08-20; it previously named none).
+  Chapter 1 may reference that, but must not assert any other model scale or parameter count for
+  `ch4:mentor-rl` that Chapter 4 does not state.
 ## Writing style guide (apply to all prose)
  
 - **"we" voice** throughout.
