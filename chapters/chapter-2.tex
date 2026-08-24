@@ -30,7 +30,7 @@ For supervised model training, we created pixel-level annotations using GNU Imag
  \centering
  \includegraphics[width=\linewidth]{figures/pennycress-unet/pennycress_scan_annotation.pdf}
  \captionsetup{justification=raggedright,singlelinecheck=false}
- \caption{Raw pennycress seed-pod scan, separated pod crop, and pixel-level annotation. (A) Flatbed scan excerpt showing multiple \textit{Thlaspi arvense} seed pods on a white scanner background before object separation, annotation, and segmentation preprocessing. (B) Separated \textit{T. arvense} seed pod extracted from a raw scan. (C) Corresponding semantic annotation mask, with wing tissue in red, envelope tissue in green, seeds in blue, and background in black.}
+ \caption[Raw pennycress seed-pod scans and pixel-level annotations.]{Raw pennycress seed-pod scan, separated pod crop, and pixel-level annotation. (A) Flatbed scan excerpt showing multiple \textit{Thlaspi arvense} seed pods on a white scanner background before object separation, annotation, and segmentation preprocessing. (B) Separated \textit{T. arvense} seed pod extracted from a raw scan. (C) Corresponding semantic annotation mask, with wing tissue in red, envelope tissue in green, seeds in blue, and background in black.}
  \label{fig:ch2-pennycress-scan-annotation}
 \end{figure}
 
@@ -48,7 +48,7 @@ After padding, we selected a tile size of 128 pixels. Pixels on the seed pod wer
  \centering
  \includegraphics[width=\linewidth]{figures/pennycress-unet/pennycress_preprocessed_images.pdf}
  \captionsetup{justification=raggedright,singlelinecheck=false}
- \caption{Preprocessing outputs for model training. (A) Padded separated pod image; the red rectangle marks the original crop boundary after adding 128 pixels of context on each side. (B) Full semantic tissue mask. (C--E) Binary masks for wing, envelope, and seed classes, respectively.}\label{fig:ch2-pennycress-preproc}
+ \caption[Preprocessing outputs for model training.]{Preprocessing outputs for model training. (A) Padded separated pod image; the red rectangle marks the original crop boundary after adding 128 pixels of context on each side. (B) Full semantic tissue mask. (C--E) Binary masks for wing, envelope, and seed classes, respectively.}\label{fig:ch2-pennycress-preproc}
 \end{figure}
 
 During validation, we left tiles unchanged to prompt the most accurate predictions possible. However, during training, we applied various image augmentations and transformations to build an invariance to common data collection issues. We applied rotation, blur, saturation, brightness, flips, and transposes with a 50\% chance of occurrence each, greatly increasing the number of unique types of tiles that could be generated.
@@ -59,7 +59,7 @@ We selected each type of transformation to combat certain issues that occur duri
  \centering
  \includegraphics[width=\linewidth]{figures/pennycress-unet/tile_gen.pdf}
  \captionsetup{justification=raggedright,singlelinecheck=false}
- \caption{Example training tiles and augmentation outputs. (A) Input and label pairs show 128$\times$128 tiles sampled from padded seed-pod images and their corresponding tissue-label masks. Tiles include background, pod-boundary, tissue, and seed contexts used for model training. (B) Representative image-tile augmentations show the transformation families applied during training, including affine rotation, blur, hue/saturation shift, brightness/contrast adjustment, flip, and transpose operations.}\label{fig:ch2-tile-gen-ex}
+ \caption[Example training tiles and augmentation outputs.]{Example training tiles and augmentation outputs. (A) Input and label pairs show 128$\times$128 tiles sampled from padded seed-pod images and their corresponding tissue-label masks. Tiles include background, pod-boundary, tissue, and seed contexts used for model training. (B) Representative image-tile augmentations show the transformation families applied during training, including affine rotation, blur, hue/saturation shift, brightness/contrast adjustment, flip, and transpose operations.}\label{fig:ch2-tile-gen-ex}
 \end{figure}
 
 \subsection{U-Net Baseline}\label{sec:ch2-unet}
@@ -78,7 +78,7 @@ The network comprises nine convolutional blocks (Figure~\ref{fig:ch2-pennycressu
  \centering
  \includegraphics[width=\linewidth]{figures/pennycress-unet/PennycressUNet.pdf}
  \captionsetup{justification=raggedright,singlelinecheck=false}
- \caption{Pennycress U-Net architecture. The model takes a 128$\times$128 RGB seed pod tile as input and returns a 128$\times$128 four-channel semantic segmentation map for background, wing, envelope, and seed classes. Orange blocks denote 3$\times$3 convolution, batch normalization (BN), SELU activation, and dropout; blue blocks denote max pooling; purple blocks denote upsampling with skip-copy connections; and the green block denotes the final 1$\times$1 convolution with softmax output. Feature-map labels are shown as height $\times$ width $\times$ channels.}
+ \caption[Pennycress U-Net architecture]{Pennycress U-Net architecture. The model takes a 128$\times$128 RGB seed pod tile as input and returns a 128$\times$128 four-channel semantic segmentation map for background, wing, envelope, and seed classes. Orange blocks denote 3$\times$3 convolution, batch normalization (BN), SELU activation, and dropout; blue blocks denote max pooling; purple blocks denote upsampling with skip-copy connections; and the green block denotes the final 1$\times$1 convolution with softmax output. Feature-map labels are shown as height $\times$ width $\times$ channels.}
  \label{fig:ch2-pennycressunet}
 \end{figure}
 
@@ -118,7 +118,7 @@ In addition to measuring area and perimeter features, we utilized the watershed 
  \centering
  \includegraphics[width=\linewidth]{figures/pennycress-unet/watershedding.pdf}
  \captionsetup{justification=raggedright,singlelinecheck=false}
- \caption{Seed-count extraction by watershed segmentation. (A) Binary seed mask isolated from the U-Net segmentation map. (B) Euclidean distance transform used to identify seed interiors. (C) Connected-component markers after thresholding the distance map at 60\% of its maximum value; colors denote marker identities used to initialize watershed segmentation, and the resulting marker count defines seed count.}
+ \caption[Seed-count extraction by watershed segmentation]{Seed-count extraction by watershed segmentation. (A) Binary seed mask isolated from the U-Net segmentation map. (B) Euclidean distance transform used to identify seed interiors. (C) Connected-component markers after thresholding the distance map at 60\% of its maximum value; colors denote marker identities used to initialize watershed segmentation, and the resulting marker count defines seed count.}
  \label{fig:ch2-watershedding}
 \end{figure}
 
@@ -304,7 +304,7 @@ We present our results in two stages: the first converts raw pod scans into a pe
  \centering
  \includegraphics[width=\linewidth]{figures/pennycress-unet/accuracy-efficiency-panels.pdf}
  \captionsetup{justification=raggedright,singlelinecheck=false}
- \caption{Accuracy and computational efficiency of benchmarked segmentation architectures. (A) Best mean IoU (mIoU) achieved by each architecture across its boundary-weighting variants plotted against total parameter count on a log scale. (B) Best mIoU plotted against mean full-image inference time on a log scale, where lower values indicate faster segmentation. Point color and the shared color bar encode peak allocated GPU memory during full-image inference; nnU-Net values were grouped from pod-crop predictions back to the source full images.}
+ \caption[Accuracy and computational efficiency of benchmarked segmentation architectures]{Accuracy and computational efficiency of benchmarked segmentation architectures. (A) Best mean IoU (mIoU) achieved by each architecture across its boundary-weighting variants plotted against total parameter count on a log scale. (B) Best mIoU plotted against mean full-image inference time on a log scale, where lower values indicate faster segmentation. Point color and the shared color bar encode peak allocated GPU memory during full-image inference; nnU-Net values were grouped from pod-crop predictions back to the source full images.}
  \label{fig:ch2-accuracy-efficiency}
 \end{figure}
 
@@ -324,7 +324,7 @@ Consistent with the wing-seed regulatory association described in Section~\ref{s
  \centering
  \includegraphics[width=\linewidth]{figures/pennycress-unet/area-distributions.pdf}
  \captionsetup{justification=raggedright,singlelinecheck=false}
- \caption{Distribution of seed-pod component areas across non-empty population-scale detections. Histograms show the measured areas (cm$^2$) of wing, envelope, and seed tissues after excluding detections with zero watershed seed markers. Colored lines show five-bin moving averages of histogram counts, and inset values report excess kurtosis, quantifying heavier-than-normal distribution tails. Seed area is concentrated at smaller values, envelope area at intermediate values, and wing area at larger values; all three traits are right-skewed and log-normal-like, consistent with natural variation in plant morphology.}
+ \caption[Distribution of seed-pod component areas]{Distribution of seed-pod component areas across non-empty population-scale detections. Histograms show the measured areas (cm$^2$) of wing, envelope, and seed tissues after excluding detections with zero watershed seed markers. Colored lines show five-bin moving averages of histogram counts, and inset values report excess kurtosis, quantifying heavier-than-normal distribution tails. Seed area is concentrated at smaller values, envelope area at intermediate values, and wing area at larger values; all three traits are right-skewed and log-normal-like, consistent with natural variation in plant morphology.}
  \label{fig:ch2-area-dist}
 \end{figure}
 
@@ -332,7 +332,7 @@ Consistent with the wing-seed regulatory association described in Section~\ref{s
  \centering
  \includegraphics[width=\linewidth]{figures/pennycress-unet/wing-area-v-seed-area-count.pdf}
  \captionsetup{justification=raggedright,singlelinecheck=false}
- \caption{Relationship between wing area and seed traits across non-empty population-scale detections. Wing area is plotted against (A) seed area and (B) seed count, with each point representing one seed pod and the solid line showing the linear least-squares fit. Points in (B) are vertically jittered by less than 0.1 seed for visibility; correlations and fitted lines use the unjittered seed-count values. Wing area is positively correlated with both seed area (Pearson $r = 0.51$) and seed count ($r = 0.30$), consistent with wing--seed regulatory association in \textit{Brassicaceae}.}
+ \caption[Relationships between wing area and seed traits]{Relationship between wing area and seed traits across non-empty population-scale detections. Wing area is plotted against (A) seed area and (B) seed count, with each point representing one seed pod and the solid line showing the linear least-squares fit. Points in (B) are vertically jittered by less than 0.1 seed for visibility; correlations and fitted lines use the unjittered seed-count values. Wing area is positively correlated with both seed area (Pearson $r = 0.51$) and seed count ($r = 0.30$), consistent with wing--seed regulatory association in \textit{Brassicaceae}.}
  \label{fig:ch2-wing-seed-corr}
 \end{figure}
 
@@ -342,7 +342,7 @@ After extracting phenotypes from our dataset, we used iRF-LOOP to construct PPNs
 \begin{figure}[p]
  \centering
  \includegraphics[width=\linewidth]{figures/pennycress-unet/pc-ppn-top0.05.pdf}
- \caption{Predictive phenotype network (PPN) for pod-related traits after retaining the top 5\% of iterative Random Forest Leave-One-Out Prediction (iRF-LOOP) relationships. Nodes are measured phenotypes; node color and panel membership denote feature classes: (A) color features, (B) geometry and area ratios, and (C) perimeter ratios. Directed arrows indicate predictor-to-response relationships, and edge width and darkness encode iRF-LOOP importance. The filtered network contains 48 nodes and 108 directed edges. In color-feature labels, $a^*$ and $b^*$ are CIELAB color channels.}
+ \caption[Predictive phenotype network (PPN) for pod-related traits]{Predictive phenotype network (PPN) for pod-related traits after retaining the top 5\% of iterative Random Forest Leave-One-Out Prediction (iRF-LOOP) relationships. Nodes are measured phenotypes; node color and panel membership denote feature classes: (A) color features, (B) geometry and area ratios, and (C) perimeter ratios. Directed arrows indicate predictor-to-response relationships, and edge width and darkness encode iRF-LOOP importance. The filtered network contains 48 nodes and 108 directed edges. In color-feature labels, $a^*$ and $b^*$ are CIELAB color channels.}
  \label{fig:ch2-pc-ppn}
 \end{figure}
 
@@ -354,7 +354,7 @@ To interpret the cross-tissue relationships more directly, we extracted the subs
  \centering
  \includegraphics[width=\linewidth]{figures/pennycress-unet/pc-ppn-focus-subset.pdf}
  \captionsetup{justification=raggedright,singlelinecheck=false}
- \caption{Focused subset of cross-tissue predictive phenotype network relationships. The subset highlights PPN edges connecting traits across pod tissues, separated into pigment coupling and size coupling groups. Nodes are measured phenotypes, with blue nodes denoting color features and orange nodes denoting geometry and area-ratio features. Directed arrows indicate predictor-to-response relationships, and edge width and darkness encode iRF-LOOP importance. Pale blue arcs visually group related pigment-feature relationships. In color-feature labels, $a^*$ and $b^*$ are CIELAB color channels.}
+ \caption[Focused subset of cross-tissue predictive phenotype network relationships]{Focused subset of cross-tissue predictive phenotype network relationships. The subset highlights PPN edges connecting traits across pod tissues, separated into pigment coupling and size coupling groups. Nodes are measured phenotypes, with blue nodes denoting color features and orange nodes denoting geometry and area-ratio features. Directed arrows indicate predictor-to-response relationships, and edge width and darkness encode iRF-LOOP importance. Pale blue arcs visually group related pigment-feature relationships. In color-feature labels, $a^*$ and $b^*$ are CIELAB color channels.}
  \label{fig:ch2-pc-ppn-focus}
 \end{figure}
 
@@ -407,7 +407,7 @@ GRIN filtering reduced the candidate ortholog set of 64 genes to 33, pruning 31 
 \begin{figure}[p]
  \centering
  \includegraphics[width=0.96\linewidth,height=0.75\textheight,keepaspectratio]{figures/pennycress-unet/mentor-dendrogram.pdf}
- \caption{MENTOR dendrogram of the 33 GRIN-refined Arabidopsis orthologs retained from U-Net-derived pod-trait GWAS candidates. (A) Complete-linkage clustering of random-walk-with-restart (RWR) dissimilarities, with the adjacent trait matrix indicating which of the four GWAS traits---envelope CIELAB $b^*$, envelope-to-seed area ratio, wing area, and wing-to-seed area ratio---each gene was associated with. (B) Polar view of the same topology, emphasizing the three MENTOR modules. Branch and outer-ring colors indicate Module 1 (17 genes; auxin, organ-size, and reproductive development), Module 2 (11 genes; metabolic supply, autophagy, and nutrient remobilization), and Module 3 (5 genes; VAL/MUG transposon-derived regulators).}
+ \caption[MENTOR dendrogram of 33 candidate Arabidopsis orthologs retained from U-Net-derived pod traits]{MENTOR dendrogram of the 33 GRIN-refined Arabidopsis orthologs retained from U-Net-derived pod-trait GWAS candidates. (A) Complete-linkage clustering of random-walk-with-restart (RWR) dissimilarities, with the adjacent trait matrix indicating which of the four GWAS traits---envelope CIELAB $b^*$, envelope-to-seed area ratio, wing area, and wing-to-seed area ratio---each gene was associated with. (B) Polar view of the same topology, emphasizing the three MENTOR modules. Branch and outer-ring colors indicate Module 1 (17 genes; auxin, organ-size, and reproductive development), Module 2 (11 genes; metabolic supply, autophagy, and nutrient remobilization), and Module 3 (5 genes; VAL/MUG transposon-derived regulators).}
  \label{fig:ch2-mentor-dendro}
 \end{figure}
 
@@ -448,7 +448,7 @@ We further evaluated the plausibility of our candidate mechanisms by examining g
  \centering
  \includegraphics[width=\linewidth,height=0.76\textheight,keepaspectratio]{figures/pennycress-unet/pod-expression-heatmap.pdf}
  \captionsetup{justification=raggedright,singlelinecheck=false}
- \caption{Expression of MENTOR-derived candidate loci across pennycress tissues. Rows are pennycress loci grouped by MENTOR module; repeated Arabidopsis orthologs reflect paralogous pennycress loci. Cell color encodes log$_2$-transformed expression (reads per kilobase) in leaf, pod, and root tissue for MN106 and SP32, with gray cells denoting values below the detection threshold ($\leq 0.5$). Pod columns are grouped and outlined because the candidate-gene plausibility assessment focuses on pod expression, and bold row labels mark literature-supported candidates emphasized in the text.}
+ \caption[Expression of MENTOR-derived candidate loci across pennycress tissues]{Expression of MENTOR-derived candidate loci across pennycress tissues. Rows are pennycress loci grouped by MENTOR module; repeated Arabidopsis orthologs reflect paralogous pennycress loci. Cell color encodes log$_2$-transformed expression (reads per kilobase) in leaf, pod, and root tissue for MN106 and SP32, with gray cells denoting values below the detection threshold ($\leq 0.5$). Pod columns are grouped and outlined because the candidate-gene plausibility assessment focuses on pod expression, and bold row labels mark literature-supported candidates emphasized in the text.}
  \label{fig:ch2-combined-expression}
 \end{figure}
 
