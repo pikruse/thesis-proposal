@@ -26,7 +26,7 @@
 \title{Deep Learning for Biological Discovery Across Omics Layers: From Phenomics to Agentic Reasoning}	       % title of thesis/dissertation
 \author{Peter Kruse}                % author's name
 \copyrightYear{2026}            % copyright year of your thesis/dissertation
-\graduationMonth{August}         % month of proposal
+\graduationMonth{September}         % month of proposal
 \majorProfessor{Dr. Daniel Jacobson}	    % advisor's nameb
 \keywords{Systems Biology, Deep Learning, Genetics, Computer Vision, Large Language Models, Multi-Omics}	% keywords (optional) separated by commas - these are used in the PDF file properties
 \viceProvost{Dixie L. Thompson} % vice provost name
@@ -85,9 +85,12 @@
 % a citation key; use this instead.
 \newcommand{\todocite}[1]{\textcolor{red}{[#1]}}
 
-% \comment{note} is Peter's channel for review notes in the source (blue, small
+% \comment{note} is the channel for review notes in the source (blue, small
 % sans, bracketed). Flip to \showcommentsfalse for a committee build; the notes
 % stay in the source either way.
+% number subsubsections so \ref to them resolves to its own number
+\setcounter{secnumdepth}{3}
+
 \newif\ifshowcomments
 \showcommentsfalse
 \newcommand{\comment}[1]{\ifshowcomments\textcolor{blue}{\textsf{\small\,[#1]}}\fi}
@@ -125,6 +128,14 @@
     filecolor=blue,
     urlcolor=blue,
     citecolor=blue,
+    % re-set the PDF document properties here: the class issues \hypersetup at
+    % load time, before \title/\author/\keywords are defined, so it captures
+    % the class placeholder values instead of these.
+    pdftitle={Deep Learning for Biological Discovery Across Omics Layers: From Phenomics to Mechanistic Reasoning},
+    pdfauthor={Peter Kruse},
+    pdfsubject={Dissertation Proposal},
+    pdfkeywords={deep learning, phenomics, genomic prediction, genotype-by-environment interaction, biological networks, reinforcement learning},
+    pdfcreator={LaTeX with hyperref},
     } 
     
 %%% PACKAGES THAT ARE PRELOADED WITH THE CLASS ARE: amsmath,amsthm,amssymb,setspace,geometry,hyperref,and color

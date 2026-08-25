@@ -1,4 +1,4 @@
-\chapter{MENTOR-RL}\label{ch4:mentor-rl}
+\chapter{\textsc{Mentor-RL}}\label{ch4:mentor-rl}
 
 \section{Introduction}
 
@@ -126,7 +126,7 @@ Runtime operators expose compact graph summaries and provenance metadata to the 
 \end{table}
 
 \subsubsection{Supervised Curriculum}\label{sec:ch4-curriculum}
-To train the model to internalize the multiplex lattice, we design a supervised curriculum that teaches it to navigate the lattice and learn the operators that generate its structure. We divide training between closed-book and open-book examples.Closed-book examples are finite and stable rules that should be memorized by the model, such as layer tags, layer families, module identifiers, and direction conventions, while open-book examples cover unobounded items like continuous values and statistics, which should be read from the runtime. The same distinction extends to tool-call training, where the model learns to parse returned objects instead of restating them from memory. We intend for the model to learn the operators that generate structure, not the specific values they produce.
+To train the model to internalize the multiplex lattice, we design a supervised curriculum that teaches it to navigate the lattice and learn the operators that generate its structure. We divide training between closed-book and open-book examples. Closed-book examples are finite and stable rules that should be memorized by the model, such as layer tags, layer families, module identifiers, and direction conventions, while open-book examples cover unbounded items like continuous values and statistics, which should be read from the runtime. The same distinction extends to tool-call training, where the model learns to parse returned objects instead of restating them from memory. We intend for the model to learn the operators that generate structure, not the specific values they produce.
 
 Using these principles, we define a ten-step supervised training curriculum that gradually introduces more complex operators and tasks. Each stage builds on the previous one, starting with basic graph navigation and moving toward module comparison, path recovery, and enrichment analysis. We group similar stages in the prose; Table~\ref{tab:ch4-curriculum} presents the full curriculum.
 
@@ -138,7 +138,7 @@ Stages S7 and S8 integrate the lattice structure by adding projection and enrich
 
 Finally, S9 consolidates the curriculum by combining earlier stages and preparing the checkpoint for the multistep reasoning required in Stage 2. The model trains on tool-call construction, selection, parsing, provenance, and task refusal, all of which are necessary for the mechanistic agent (Section~\ref{sec:ch4-agent-loop}) to operate effectively in the multiplex lattice.
 
-The curriculum scales difficulty along several axes. We scale the lattice tier from single cell types to tissues, regions, and eventually the entire brain. Dendrogram cut height controls module size, progressing from coarse to fine-grained views of clades. We also scale operator complexity and book mode explicitly. To measure progress, we define task-specific gates that the model must pass before advancing to the next stage. All gates use held-out question phrasings and graph regions for each family, as well as negative examples that measure abstention.
+The curriculum scales difficulty along several axes. We scale the lattice tier from single cell types to tissues, regions, and eventually the entire brain. Dendrogram cut height controls module size, progressing from coarse to fine-grained views of clades. We also scale operator complexity and book mode explicitly. To measure progress, we define task-specific gates that the model must pass before advancing to the next stage. All gates use held out question phrasings and graph regions for each family, as well as negative examples that measure abstention.
 
 \begin{table}[htb!]
 \centering
@@ -152,16 +152,16 @@ The curriculum scales difficulty along several axes. We scale the lattice tier f
 & \textbf{Focus} & \textbf{Book mode} & \textbf{Share} & \textbf{Gate} \\
 \midrule
 S0 & Entity normalization between symbols and Ensembl identifiers, including ambiguous symbols
-   & closed & 4\% & Near-perfect accuracy on held-out identifiers, and correct deferral on ambiguous symbols \\
+   & closed & 4\% & Near-perfect accuracy on held out identifiers, and correct deferral on ambiguous symbols \\
 \addlinespace
 S1 & Lattice coordinate system: layer tags and families, module identifiers, and direction conventions
-   & closed & 4\% & Near-perfect accuracy on held-out tags and module identifiers \\
+   & closed & 4\% & Near-perfect accuracy on held out tags and module identifiers \\
 \addlinespace
 S2 & Atomic graph facts: edge existence, neighbors, layer membership, degree and hubness, components, and calibration negatives
-   & open & 14\% & Per-family accuracy on held-out graph regions and phrasings, and correct refusal on calibration negatives \\
+   & open & 14\% & Per-family accuracy on held out graph regions and phrasings, and correct refusal on calibration negatives \\
 \addlinespace
 S3 & Paths and cross-layer routes, path decomposition by layer, and connector and bridge nodes
-   & open & 8\% & Path and bridge recovery on held-out graph regions \\
+   & open & 8\% & Path and bridge recovery on held out graph regions \\
 \addlinespace
 S4 & Bottom-up RWR-LOE neighborhoods: rank and score lookup, comparison, the elbow, leave-one-out support, and stability
    & open, tool & 16\% & Recovery and comparison accuracy stratified by distractor band \\
@@ -179,7 +179,7 @@ S8 & Composition and lattice scaling: open-book context-ontology navigation, joi
    & open, tool & 8\% & Parent, child, and sibling set accuracy; join and ontology-distance accuracy; and correct structure on unions assembled from parts seen in training \\
 \addlinespace
 S9 & Tool-call consolidation: selection, argument construction, result parsing, provenance, and refusal of raw path arguments
-   & tool & 6\% & Schema-valid tool-call rate and correct parsing on held-out tools and phrasings \\
+   & tool & 6\% & Schema-valid tool-call rate and correct parsing on held out tools and phrasings \\
 \bottomrule
 \end{tabularx}
 \end{table}
@@ -192,7 +192,7 @@ Every answer field is checked against a deterministic runtime, which ensures tha
 To provide sufficient training signal, our provisional lattice corpus includes 24 contexts and a full-brain multiplex. We expect to generate approximately 3 million supervised examples: roughly 10\% closed-book, 75\% open-book, and 15\% tool-call examples, totaling about 1.2 billion training tokens. This corpus can be expanded to additional context as lattices for them become available, which we discuss further in Section~\ref{sec:ch4-limits}. Cached ground truth, not text, dominates storage, with an estimated 2--4 terabytes across the 24 contexts. This provides a second reason to materialize corpora in curriculum order instead of all at once. These estimates are provisional and will be adjusted based on results at each curriculum stage.
 
 \subsubsection{Splits and Leakage Control}\label{sec:ch4-splits}
-Because contexts share genes, they also share edges, which creates a risk of leakage between training, validation, and test sets. To mitigate this risk, we hold out whole contexts, whole modules, and whole seed genes. Two to four of the 24 contexts will be held out entirely, so their hierarchies are never seen in training. Modules are held out by cutting the maximal subtrees at a chosen anchor height, since genes appear in every module above that height. All tuples sharing a seed gene go to the same split, and we limit the overlap between held-out and training tuples. Additionally, each split is auditing prior to training, allowing us to identify and remove any remaining leakage.
+Because contexts share genes, they also share edges, which creates a risk of leakage between training, validation, and test sets. To mitigate this risk, we hold out whole contexts, whole modules, and whole seed genes. Two to four of the 24 contexts will be held out entirely, so their hierarchies are never seen in training. Modules are held out by cutting the maximal subtrees at a chosen anchor height, since genes appear in every module above that height. All tuples sharing a seed gene go to the same split, and we limit the overlap between held out and training tuples. Additionally, each split is audited prior to training, allowing us to identify and remove any remaining leakage.
 
 Using this protocol, we can reduce the risk of leakage while keeping biological structure intact. Contexts still share backbone edges, which are by definition present in every context. Instead of removing these edges, we bound and report them.
 
@@ -233,7 +233,7 @@ The findings that a task populates depend on the task type. Module tasks populat
 To ground the agent's reasoning in evidence, we train three behaviors. The agent supports every claim with retrieved evidence, states its uncertainty explicitly, and abstains when support is weak. It uses the \textsc{Mentor-EV} dendrogram modules as an index and confirms its hypotheses on the network, following the multiview structure described in Section~\ref{sec:ch4-views}. It returns both a human-readable interpretation and a structured state for record-keeping. The reward function and training curriculum reinforce these behaviors.
 
 \subsubsection{Task Cases and Targets}\label{sec:ch4-task-cases}
-To train the agent, we define three categories of agent-training tasks that build on the lattice representation learned in Stage 1: module, connectivity, and projection tasks. Each has targets that provide deterministic rewards and support evaluation. These tasks combine to answer two kinds of questions. First, whether a set of genes forms a complete and coherent module, and second, how the modules connect to each on the multiplex lattice. Each task type has targets that provide deterministic rewards and support evaluation.
+To train the agent, we define three categories of agent-training tasks that build on the lattice representation learned in Stage 1: module, connectivity, and projection tasks. Each has targets that provide deterministic rewards and support evaluation. These tasks combine to answer two kinds of questions. First, whether a set of genes forms a complete and coherent module, and second, how the modules connect to one another in the multiplex lattice. Each task type has targets that provide deterministic rewards and support evaluation.
 
 Module tasks fall into four cases: partial-group completion, mechanism explanation, group refinement, and recognition of no shared mechanism. In partial-group completion, the agent receives a module with some genes held out and must recover the complete module. In mechanism explanation, the agent receives a complete module and must identify its supporting mechanistic evidence without adding or removing genes. In group refinement, the agent receives a module with distractor genes and must remove them to recover a mechanistically coherent group. In the no-shared-mechanism case, the agent receives a conflict-free set that is not mechanistically coherent and must report that the evidence provides insufficient support for a shared mechanism.
 
@@ -261,7 +261,7 @@ We generate module tasks from top-down \textsc{Mentor-EV} modules and bottom-up 
 
 The two module sources differ only in where distractors come from. For \textsc{Mentor-EV} modules, noise and \texttt{none} genes are drawn from difficulty-modulated \textit{dendrogram distance bands}, defined by walking up the module's ancestry in the tree, so that difficulty controls how topologically close the distractors are to the module. For RWR-LOE modules we substitute rank bands, drawing from ranks just beyond, moderately beyond, or far beyond the seed's elbow cutoff. In both cases \texttt{none} genes are additionally constrained to be conflict-free, so that the sampled genes do not form a coherent module of their own, and all selection is deterministic given a fixed seed, making the corpus reproducible. Module-size bins are assigned after construction from the realized module sizes, and all splits follow the protocol of Section~\ref{sec:ch4-splits}.
 
-Connectivity instances pair sampled clades at specified tree distances; projection instances sample a seed neighborhood from the sources in Section~\ref{sec:ch4-curriculum}), which difficulty set by how far apart the enriched clades fall in the hierarchy. The runtime then materializes the path, layer support, enrichment, and connectivity targets defined in Section~\ref{sec:ch4-task-cases}.
+Connectivity instances pair sampled clades at specified tree distances; projection instances sample a seed neighborhood from the sources in Section~\ref{sec:ch4-curriculum}, with difficulty set by how far apart the enriched clades fall in the hierarchy. The runtime then materializes the path, layer support, enrichment, and connectivity targets defined in Section~\ref{sec:ch4-task-cases}.
 
 \subsubsection{Trajectory Generation}\label{sec:ch4-traj-gen}
 Trajectories for reinforcement learning and preference optimization are generated by shared-prefix branch exploration. At each decision point, the policy proposes several candidate continuations from the same state, the runtime executes any valid tool calls among them, and the resulting branches are scored against one another. One branch is retained as the trajectory, while eligible alternatives become material for preference pairs. The procedure is described below.
@@ -290,7 +290,7 @@ We define a three-stage curriculum for the mechanistic agent, which gradually in
 \subsubsection{Reward Design}\label{sec:ch4-reward}
 We define training-time scores over structured state transitions, deterministic runtime metadata, and hidden scorer-only targets specific to each task family; natural-language reasoning is not scored directly. This keeps scoring reproducible, machine-parseable, and scalable without relying on human judges during training. Every score has four shared components: schema compliance, task correctness, evidence-grounded mechanistic quality, and efficiency.
 
-Task correctness is computed the same way for all task types, but the underlying targets differ. Each family declares which which findings in the structured state are scored and against which hidden target, and each declared component is scored by overlap with that target. Families with several scored components are reward from a weighted mean, so $q^{\mathrm{task}(S)} \in [0,1]$ regardless of family.
+Task correctness is computed the same way for all task types, but the underlying targets differ. Each family declares which findings in the structured state are scored and against which hidden target, and each declared component is scored by overlap with that target. For families with several scored components, we compute the task score as a weighted mean, so $q^{\mathrm{task}}(S) \in [0,1]$ regardless of family.
 
 Because DPO compares continuations after the same prefix, we score a candidate branch $b$ by its change in task correctness and mechanistic quality:
 
@@ -315,7 +315,7 @@ For recovery, refinement, and explanation tasks, task correctness is the best ma
     \right],
 \end{equation*}
 
-where $\mathcal{G}(S)$ is the set of predicted groups in structured state $S$, with an empty group used when no prediction is present, and $J$, $P$, and $R$ representing the Jaccard similarity, precision, and recall of a prediced group against the target. The weights $\alpha$, $\beta$, and $\gamma$ sum to one and are set per task case: recovery upweights recall, refinement upweights precision, and explanation weights the three equally. Final values will be set during development. This formulation supports a multiple-groups state while retaining a single-module hidden target. For module tasks, $q^{\mathrm{module}}$ takes the role of $q^{\mathrm{task}}$ in Equation~\ref{eq:ch4-local-reward}.
+where $\mathcal{G}(S)$ is the set of predicted groups in structured state $S$, with an empty group used when no prediction is present, and $J$, $P$, and $R$ representing the Jaccard similarity, precision, and recall of a predicted group against the target. The weights $\alpha$, $\beta$, and $\gamma$ sum to one and are set per task case: recovery upweights recall, refinement upweights precision, and explanation weights the three equally. Final values will be set during development. This formulation supports a multiple-groups state while retaining a single-module hidden target. For module tasks, $q^{\mathrm{module}}$ takes the role of $q^{\mathrm{task}}$ in Equation~\ref{eq:ch4-local-reward}.
 
 For a \texttt{none} task, the correctness score instead rewards calibrated abstention:
 
@@ -399,7 +399,7 @@ The local scores above supply the preference signal for DPO, while the terminal 
 \begin{figure}[tbp]
     \centering
     \resizebox{\linewidth}{!}{\input{figures/mentor-rl/training-pipeline}}
-    \caption[The two-stage training pipeline]{The gated two-stage training pipeline. Stage 1 advances through supervised curriculum steps only after held-out gates clear. Its checkpoint initializes trajectory generation and preference optimization in Stage 2, followed by online GRPO. Checkpoint evidence accumulates from structural evaluations through agent behavior and expert review.}
+    \caption[The two-stage training pipeline]{The gated two-stage training pipeline. Stage 1 advances through supervised curriculum steps only after held out gates clear. Its checkpoint initializes trajectory generation and preference optimization in Stage 2, followed by online GRPO. Checkpoint evidence accumulates from structural evaluations through agent behavior and expert review.}
     \label{fig:ch4-training-pipeline}
 \end{figure}
 
@@ -411,7 +411,7 @@ The DPO checkpoint then initializes GRPO for long-horizon exploration. Each roll
 
 We monitor tool-use entropy, trajectory diversity, and the single-pass RWR shortcut, in which one expansion recovers much of a module without meaningful exploration. We monitor single-pass shortcuts because they can lead to task correctness without the multi-step reasoning that rewards are meant to encourage. If shortcuts emerge, we introduce adversarial modules or a diversity bonus; these monitors must clear before advancement.
 
-Each transition is gated. Stage 1 uses the per-step gates in Table~\ref{tab:ch4-curriculum}; DPO must improve module recovery and mechanistic grounding over SFT on held-out splits; and GRPO must improve the flagship evaluations. Deployment additionally requires expert preference to rise across the base, SFT, DPO, and GRPO checkpoints under Section~\ref{sec:ch4-stage2-eval}.
+Each transition is gated. Stage 1 uses the per-step gates in Table~\ref{tab:ch4-curriculum}; DPO must improve module recovery and mechanistic grounding over SFT on held out splits; and GRPO must improve the flagship evaluations. Deployment additionally requires expert preference to rise across the base, SFT, DPO, and GRPO checkpoints under Section~\ref{sec:ch4-stage2-eval}.
 
 Difficulty scales throughout optimization. Stage 1 independently advances book mode, operator complexity, lattice tier, cut-height granularity, and distractor band over curriculum stages. DPO moves from \texttt{easy} to \texttt{hard} pairs and from module recovery and refinement to connectivity and projection. GRPO increases the horizon $T_{\max}$, realized module size, perturbation size, distractor proximity, and lattice tier up to higher-order brain combinations. Batches remain balanced across task types, difficulty bins, and both module sources.
 
@@ -421,7 +421,7 @@ Stage 1 advances through the gates in Table~\ref{tab:ch4-curriculum}, which are 
 
 In the first flagship, the model receives the active layers of an unseen context along with a query gene set, and it returns pairwise co-membership, lowest common ancestor depth, and a partition of the query gene set into clades. We score these results against a ground-truth dendrogram from the runtime. Because hierarchies diverge across contexts, this flagship tests whether the model has internalized the lattice structure.
 
-The second flagship follows the projection described in Section~\ref{sec:ch4-task-cases}. A seed neighborhood is selected, then enriched against the hierarchy, and the model recovers the paths and bridge nodes connecting significantly enriched clades. This flaghip tests whether the model can unify multiplex views into a single interpretation.
+The second flagship follows the projection described in Section~\ref{sec:ch4-task-cases}. A seed neighborhood is selected, then enriched against the hierarchy, and the model recovers the paths and bridge nodes connecting significantly enriched clades. This flagship tests whether the model can unify multiplex views into a single interpretation.
 
 To test whether lattice operators are internalized, we use multilayer-perceptron \textit{probes}~\cite{alain2016understanding}, which are classifiers trained on hidden layer activations, to recover edge presence, layer membership, clade co-membership, and connector status. We then intervene on those activations and measure whether answers change, distinguishing causal structure from mere decodability. This is a gate rather than a diagnostic and is repeated under the lean-context condition without the full rank-vector legend. Table~\ref{tab:ch4-flagship-scoring} summarizes both flagships and the probe gate.
 
@@ -461,9 +461,9 @@ Probing and intervention gate
 \end{table}
 
 \subsubsection{Stage 2 Evaluation: Mechanistic Agent DPO and GRPO}\label{sec:ch4-stage2-eval}
-We will calculate evaluation metrics for Stage 2 by parsing the model's terminal structured state $S_T$, enabling scalable checkpoint evaluation. All evaluations will use a held-out set of \textsc{Mentor-EV}- and RWR-LOE-derived modules from the brain lattice. We will measure module, enriched-clade, and cross-clade path recovery with Jaccard, precision, recall, and F1. Jaccard penalizes both missing and extra genes, precision and recall separate those error directions, and F1 provides a balanced summary. We will also report mechanistic-grounding quality to test whether claims align with the evidence retrieved by the model.
+We will calculate evaluation metrics for Stage 2 by parsing the model's terminal structured state $S_T$, enabling scalable checkpoint evaluation. All evaluations will use a held out set of \textsc{Mentor-EV}- and RWR-LOE-derived modules from the brain lattice. We will measure module, enriched-clade, and cross-clade path recovery with Jaccard, precision, recall, and F1. Jaccard penalizes both missing and extra genes, precision and recall separate those error directions, and F1 provides a balanced summary. We will also report mechanistic-grounding quality to test whether claims align with the evidence retrieved by the model.
 
-We will report the weighted composite reward $R_T$, defined in Section~\ref{sec:ch4-reward}, to compare reward magnitude on validation and holdout splits. For the \texttt{none} task type, where $C = \varnothing$, we will parse $S_T$ for the terminal hypothesis status $\mathrm{status}(S_T)$. In addition to global accuracy and reward, we will distinguish the two error directions: claiming that no mechanism exists for a related gene set (false negative) and fabricating a mechanism for unrelated entities (false positive). We will also report mean trajectory length, budget utilization, and invalid-tool-call rate, enabling comparison of holdout and validation efficiency under Equation~\ref{eq:ch4-terminal-eff}.
+We will report the weighted composite reward $R_T$, defined in Section~\ref{sec:ch4-reward}, to compare reward magnitude on validation and holdout splits. For the \texttt{none} task type, where $C = \varnothing$, we will parse $S_T$ for the terminal hypothesis status, $\mathrm{status}(S_T)$. In addition to global accuracy and reward, we will distinguish the two error directions: claiming that no mechanism exists for a related gene set (false negative) and fabricating a mechanism for unrelated entities (false positive). We will also report mean trajectory length, budget utilization, and invalid-tool-call rate, enabling comparison of holdout and validation efficiency under Equation~\ref{eq:ch4-terminal-eff}.
 
 We will stratify module-task results by module size, noise, task type, and module source to examine the effect of curriculum staging. We will also stratify by lattice tier and cut-height granularity to measure performance across regions of the lattice. Each axis will be divided into three discrete bins. We will also assess stability by re-running the runtime's enrichment and propagation on leave-one-out subsets of each seed set and reporting the mean Jaccard between the resulting supporting-evidence sets. These metrics will show how \textsc{Mentor-RL} performs as difficulty increases and task type changes; comparison by module source will reveal whether the model generalizes across construction methods or favors one module type.
 
@@ -474,13 +474,13 @@ We will then use the same protocol for intra-model preference testing across the
 \subsubsection{Ablation Studies}
 To ensure that each component of our methodology contributes to an improvement in mechanistic interpretation, we will ablate both training stages and design elements. All ablations will be evaluated using the holdout metrics defined in Section~\ref{sec:ch4-stage2-eval}.
 
-We ablate phases of the training pipeline to test whether each stage improves on the preceding checkpoint. First, we compare the SFT-only checkpoint with the SFT-and-DPO checkpoint to test whether preference optimization improves interpretation. Next, we compare the DPO checkpoint with the full pipeline to determine whether long-horizon RL improves on local preference training. Finally, we ablate Stage 1 entirely, training the agent from the base policy without the world-model curriculum and comparing it with the complete pipeline on module-recovery, connectivity, and projection tasks. This ablation tests the proposal's central claim that the world model is necessary rather than merely helpful. Preliminary trajectory diagnostics in Section~\ref{sec:ch4-prelim} indicate what to expect. An untrained policy prunes distractors successfully but fails to recover held-out members or ground its claims in retrieved evidence.
+We ablate phases of the training pipeline to test whether each stage improves on the preceding checkpoint. First, we compare the SFT-only checkpoint with the SFT-and-DPO checkpoint to test whether preference optimization improves interpretation. Next, we compare the DPO checkpoint with the full pipeline to determine whether long-horizon RL improves on local preference training. Finally, we ablate Stage 1 entirely, training the agent from the base policy without the world-model curriculum and comparing it with the complete pipeline on module-recovery, connectivity, and projection tasks. This ablation tests the proposal's central claim that the world model is necessary rather than merely helpful. Preliminary trajectory diagnostics in Section~\ref{sec:ch4-prelim} indicate what to expect. An untrained policy prunes distractors successfully but fails to recover held out members or ground its claims in retrieved evidence.
 
 We also ablate architectural and reward decisions. First, we remove the policy's verifier mode to test whether self-verification improves results. Second, we remove the efficiency penalty $p^{eff}$ to test whether \textsc{Mentor-RL} learns reasonable trajectory lengths without regularization. Finally, we remove progressive difficulty bins and train on all bins simultaneously to test whether the model can learn from hard examples without curriculum staging.
 
 \section{Expected Results}
 \subsection{Expected Empirical Results}
-We expect \textsc{Mentor-RL} to recover modules and cross-module paths accurately in held-out lattice contexts, measured by Jaccard, precision, recall, and F1; project seed neighborhoods to enriched clades and connecting paths; and ground interpretations in retrieved evidence. Probes should decode lattice structure, and interventions should show that it is causal to reasoning. Improvement across SFT, DPO, and GRPO checkpoints on unseen contexts would indicate out-of-distribution generalization.
+We expect \textsc{Mentor-RL} to recover modules and cross-module paths accurately in held out lattice contexts, measured by Jaccard, precision, recall, and F1; project seed neighborhoods to enriched clades and connecting paths; and ground interpretations in retrieved evidence. Probes should decode lattice structure, and interventions should show that it is causal to reasoning. Improvement across SFT, DPO, and GRPO checkpoints on unseen contexts would indicate out-of-distribution generalization.
 
 \subsection{Expected Behavioral Results}
 We expect the act--verify loop to reduce invalid calls and unsupported claims, the efficiency penalty to shorten trajectories without reducing recovery, and expert preference to rise across the base, SFT, DPO, and GRPO checkpoints. The corresponding verifier, efficiency, and checkpoint ablations in Section~\ref{sec:ch4-stage2-eval} test each claim.
@@ -492,7 +492,7 @@ We will release, under licenses compatible with the underlying data sources, the
     \item the lattice-grounded training environment, including the \texttt{ctypes} multiplex runtime, tool vocabulary, and deterministic scoring functions,
     \item train, validation, and test split indices at the context, subtree, and tuple level, a leakage audit, and the code required to reconstruct the raw training corpus and cached API responses,
     \item trained \textsc{Mentor-RL} checkpoints for each stage of the pipeline (SFT stages S0-S9, DPO, and GRPO),
-    \item the flagship harnesses, including held-out contexts and reserved target genes, and
+    \item the flagship harnesses, including held out contexts and reserved target genes, and
     \item training and generation code, curriculum configurations, and logged trajectories to support reproducible re-training and ablation.
 \end{enumerate}
 
@@ -508,7 +508,7 @@ Finally, we generated the corpora for the Stage 1 S0 and S1 curriculum steps. Ou
 
 To begin Stage 1 training, we tested four tokenization approaches for mapping tasks. First, we used the gpt-oss-120b base tokenizer, fitted to its pretraining corpus with byte-pair encoding (BPE), as a control. Second, we fit a BPE tokenizer only to Ensembl identifiers and gene symbols, then concatenated the resulting vocabulary with the base vocabulary; we call this \textbf{domain-BPE} tokenization. Third, we encoded the Ensembl prefix (ENSG) as an atomic token, fit BPE to the remaining identifier suffixes and gene symbols, and concatenated that vocabulary with the base vocabulary; we call this \textbf{atomic+domain-BPE} tokenization. Finally, we represented each Ensembl identifier using atomic tokens for its prefix and accession body, represented each gene symbol with one atomic token, and tokenized module identifiers compositionally; we call this \textbf{atomic} tokenization.
 
-Our preliminary results show that base tokenization performs poorly on mapping tasks. We trained gpt-oss-120b on approximately 2,000 questions from a small S0 subset under each tokenization approach and evaluated it on 1,000 hard-subset questions. Overall accuracy increased from 45.6\% with the base tokenizer to 85.9\% with atomic tokenization. The mapping-specific gains were larger. Symbol-to-Ensembl accuracy increased from 8.3\% to 100\%, and Ensembl-to-symbol accuracy increased from 5.6\% to 100\%. These results select atomic tokenization for S0, pending confirmation at full vocabulary scale with held-out and low-frequency entities.
+Our preliminary results show that base tokenization performs poorly on mapping tasks. We trained gpt-oss-120b on approximately 2,000 questions from a small S0 subset under each tokenization approach and evaluated it on 1,000 hard-subset questions. Overall accuracy increased from 45.6\% with the base tokenizer to 85.9\% with atomic tokenization. The mapping-specific gains were larger. Symbol-to-Ensembl accuracy increased from 8.3\% to 100\%, and Ensembl-to-symbol accuracy increased from 5.6\% to 100\%. These results select atomic tokenization for S0, pending confirmation at full vocabulary scale with held out and low-frequency entities.
 
 \subsection{Plan of Work}\label{sec:ch4-plan}
 We will complete S0--S9 sequentially, materializing each corpus after the preceding gate clears; S0 is underway. The resulting Stage 1 checkpoint will undergo the two flagship evaluations, the cross-cutting probe gate, and curriculum ablations before generating Stage 2 trajectories. DPO on those trajectories will initialize GRPO, followed by the final evaluations, ablations, and deliverables in Section~\ref{sec:ch4-deliverables}.
