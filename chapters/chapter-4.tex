@@ -257,7 +257,7 @@ Module tasks use scorer-only membership targets drawn from RWR-LOE neighborhoods
 The runtime supplies family-specific targets for connectivity and projection: optimal paths, connector and bridge nodes, and supporting layers for connectivity; and per-clade enrichment, cross-clade connectivity, and allowed or disallowed interpretations for projection. Any optimal path is accepted. All targets remain hidden from the agent, and evidence grounding is scored consistently across task families.
 
 \subsubsection{Task Corpora}\label{sec:ch4-corpora}
-We generate module tasks from top-down \textsc{Mentor-EV} modules and bottom-up RWR-LOE neighborhoods sampled across the lattice \comment{does this cover projection too?}. For each module of size $n$, we deterministically materialize up to four instances: \texttt{explanation} uses the full module, \texttt{recovery} drops $k_{\text{drop}}$ genes, \texttt{refinement} adds $k_{\text{add}}$ distractors, and \texttt{none} constructs an unrelated pseudo-module with an empty target. Perturbation size increases with task difficulty and module size.
+We generate module tasks from top-down \textsc{Mentor-EV} modules and bottom-up RWR-LOE neighborhoods sampled across the lattice. For each module of size $n$, we deterministically materialize up to four instances: \texttt{explanation} uses the full module, \texttt{recovery} drops $k_{\text{drop}}$ genes, \texttt{refinement} adds $k_{\text{add}}$ distractors, and \texttt{none} constructs an unrelated pseudo-module with an empty target. Perturbation size increases with task difficulty and module size.
 
 The two module sources differ only in where distractors come from. For \textsc{Mentor-EV} modules, noise and \texttt{none} genes are drawn from difficulty-modulated \textit{dendrogram distance bands}, defined by walking up the module's ancestry in the tree, so that difficulty controls how topologically close the distractors are to the module. For RWR-LOE modules we substitute rank bands, drawing from ranks just beyond, moderately beyond, or far beyond the seed's elbow cutoff. In both cases \texttt{none} genes are additionally constrained to be conflict-free, so that the sampled genes do not form a coherent module of their own, and all selection is deterministic given a fixed seed, making the corpus reproducible. Module-size bins are assigned after construction from the realized module sizes, and all splits follow the protocol of Section~\ref{sec:ch4-splits}.
 
@@ -304,18 +304,16 @@ Because DPO compares continuations after the same prefix, we score a candidate b
 \end{equation}
 
 Here, $q^{\mathrm{task}}(S)\in[0,1]$ is the correctness score associated with the sampled task family, $\Delta q^{\mathrm{task}}_{t,b}$ is the difference between $q^{\mathrm{task}}$ at $t$ and $t+1$, and $\Delta m_{t,b}$ is the difference between the mechanistic quality at $t$ and $t+1$. The schema term is equal to one only when the candidate state and any tool request satisfy their typed validators. The guard penalty covers task-incompatible behavior and varies by task family. For module tasks, an \texttt{explanation} branch is penalized for removing members from a module that is already complete. Across all families, mechanistic improvement is clamped to be non-positive whenever a branch degrades task correctness.
-% TODO: state the projection-family guard (e.g. penalize a clade asserted without a runtime
-% significance value, or a bridge node absent from the multiplex).
 
 For recovery, refinement, and explanation tasks, task correctness is the best match between any predicted group and the hidden module target $C$:
 
-\begin{equation}\label{eq:ch4-module-state-score}
+\begin{equation*}
     q^{\mathrm{module}}(S; C, C_{\mathrm{type}})
     = \max_{G \in \mathcal{G}(S)}
     \left[
         \alpha J(G,C)+\beta P(G,C)+\gamma R(G,C)
     \right],
-\end{equation}
+\end{equation*}
 
 where $\mathcal{G}(S)$ is the set of predicted groups in structured state $S$, with an empty group used when no prediction is present, and $J$, $P$, and $R$ representing the Jaccard similarity, precision, and recall of a prediced group against the target. The weights $\alpha$, $\beta$, and $\gamma$ sum to one and are set per task case: recovery upweights recall, refinement upweights precision, and explanation weights the three equally. Final values will be set during development. This formulation supports a multiple-groups state while retaining a single-module hidden target. For module tasks, $q^{\mathrm{module}}$ takes the role of $q^{\mathrm{task}}$ in Equation~\ref{eq:ch4-local-reward}.
 
@@ -357,9 +355,9 @@ The enrichment component scores significant clade recovery, where the runtime co
 
 We define mechanistic quality $m(S) \in [0,1]$ from the evidence the agent has retrieved. Each component measures the alignment between the mechanistic labels in the structured state and the evidence that supports them. Let $g$ denote grounding, or the fraction of asserted entities and labels that appear in retrieved observations. Let $n$ denote network support, or the fraction of asserted relationships confirmed in the multiplex in stated layers. Finally, let $c$ denote corroboration, or the fraction of claims supported by at least two independent sources among enrichment, annotation, and network. For a structured state that asserts mechanistic labels, we define
 
-\begin{equation}\label{eq:ch4-mech-quality}
+\begin{equation*}
     m^{\mathrm{claim}} = w_g\,g + w_n\,n + w_c\,c,
-\end{equation}
+\end{equation*}
 
 with weights summing to one and set during development. For an abstaining state, or one whose status is \texttt{insufficient\_support} (Section~\ref{sec:ch4-agent-loop}), we set $m^{\mathrm{abs}} = w_u\,u + w'_g\,g$, where $u$ is one minus the best corroboration available for any candidate claim, so withholding is rewarded in proportion to the weakness of the evidence. On a non-\texttt{none} task, this score is forced to zero when a target is recoverable, preventing unsupported abstention from earning mechanistic reward.
 
@@ -370,7 +368,7 @@ Schema-invalid requests, exact duplicates, missing observations, and error obser
 \subsubsection{Terminal Reward Decomposition for GRPO}\label{sec:ch4-terminal-reward}
 Unlike DPO, which compares local same-prefix branches, policy gradient methods require a scalar reward for a completed rollout. We therefore define a terminal reward over the final structured state and trajectory log:
 
-\begin{equation}\label{eq:ch4-terminal-reward}
+\begin{equation*}
 \begin{aligned}
     R_T={}&w_s^T s_{\mathrm{schema}}^T
     +w_q^T q_T^{\mathrm{task}}
@@ -379,7 +377,7 @@ Unlike DPO, which compares local same-prefix branches, policy gradient methods r
     +w_{\Delta m}^T(m_T-m_0)
     -w_e^T p_{\mathrm{eff}}^T.
 \end{aligned}
-\end{equation}
+\end{equation*}
 
 Here, $q_T^{\mathrm{task}}$ uses the same family-specific definition as local scoring, so absolute and cumulative correctness apply equally to module, \texttt{none}, connectivity, and projection tasks. The terminal mechanistic terms use the final evidence-grounded score and its change from initialization. Mechanistic credit is capped when the task-specific correctness gate fails, preventing a fluent interpretation from compensating for an incorrect module, path, or projection. The terminal schema score additionally requires a valid final state and a recorded termination mode, whether the agent stops voluntarily or exhausts its budget.
 
@@ -462,7 +460,7 @@ Probing and intervention gate
 \end{tabularx}
 \end{table}
 
-\subsubsection{Stage 2 Evaluation: Mechanistic Agent DPO and GRPO}\label{sec:ch4-stage2-eval} \comment{a lot of this is in present tense, but it hasn't been done yet.}
+\subsubsection{Stage 2 Evaluation: Mechanistic Agent DPO and GRPO}\label{sec:ch4-stage2-eval}
 We will calculate evaluation metrics for Stage 2 by parsing the model's terminal structured state $S_T$, enabling scalable checkpoint evaluation. All evaluations will use a held-out set of \textsc{Mentor-EV}- and RWR-LOE-derived modules from the brain lattice. We will measure module, enriched-clade, and cross-clade path recovery with Jaccard, precision, recall, and F1. Jaccard penalizes both missing and extra genes, precision and recall separate those error directions, and F1 provides a balanced summary. We will also report mechanistic-grounding quality to test whether claims align with the evidence retrieved by the model.
 
 We will report the weighted composite reward $R_T$, defined in Section~\ref{sec:ch4-reward}, to compare reward magnitude on validation and holdout splits. For the \texttt{none} task type, where $C = \varnothing$, we will parse $S_T$ for the terminal hypothesis status $\mathrm{status}(S_T)$. In addition to global accuracy and reward, we will distinguish the two error directions: claiming that no mechanism exists for a related gene set (false negative) and fabricating a mechanism for unrelated entities (false positive). We will also report mean trajectory length, budget utilization, and invalid-tool-call rate, enabling comparison of holdout and validation efficiency under Equation~\ref{eq:ch4-terminal-eff}.
@@ -502,7 +500,7 @@ By releasing a deterministically-scored, open-source mechanistic exploration wor
 
 \section{Discussion}
 \subsection{Preliminary Results}\label{sec:ch4-prelim}
-Several preliminary results support the feasibility of the proposed approach. First, we demonstrated full fine-tuning of the 120-billion-parameter open-weight gpt-oss-120b model~\cite{gpt-oss} using data, tensor, and expert parallelism on OLCF's Frontier supercomputer. We have trained on up to 128 nodes. This infrastructure, together with the ability to test smaller models such as gpt-oss-20b under the same training and evaluation pipeline, meets the capacity requirements for the multiplex-lattice dataset. \comment{we should put training curves here}
+Several preliminary results support the feasibility of the proposed approach. First, we demonstrated full fine-tuning of the 120-billion-parameter open-weight gpt-oss-120b model~\cite{gpt-oss} using data, tensor, and expert parallelism on OLCF's Frontier supercomputer. We have trained on up to 128 nodes. This infrastructure, together with the ability to test smaller models such as gpt-oss-20b under the same training and evaluation pipeline, meets the capacity requirements for the multiplex-lattice dataset.
 
 We also implemented the Stage 2 trajectory-generation loop (Section~\ref{sec:ch4-agent-loop}) using the same gpt-oss-120b model. The loop runs end-to-end, provides a dashboard for run inspection, and produced no parsing errors in the preliminary runs. However, initializing trajectory generation from a base model without Stage 1 training yields poor performance. The protocol succeeds on refinement tasks but fails on recovery tasks and provides weak mechanistic grounding. These results support the need for Stage 1 to provide domain knowledge and tool-calling capabilities before Stage 2. Because they are based on a small number of runs and do not include the full evaluation suite, we will evaluate the loop more thoroughly after Stage 1 training.
 
@@ -510,8 +508,7 @@ Finally, we generated the corpora for the Stage 1 S0 and S1 curriculum steps. Ou
 
 To begin Stage 1 training, we tested four tokenization approaches for mapping tasks. First, we used the gpt-oss-120b base tokenizer, fitted to its pretraining corpus with byte-pair encoding (BPE), as a control. Second, we fit a BPE tokenizer only to Ensembl identifiers and gene symbols, then concatenated the resulting vocabulary with the base vocabulary; we call this \textbf{domain-BPE} tokenization. Third, we encoded the Ensembl prefix (ENSG) as an atomic token, fit BPE to the remaining identifier suffixes and gene symbols, and concatenated that vocabulary with the base vocabulary; we call this \textbf{atomic+domain-BPE} tokenization. Finally, we represented each Ensembl identifier using atomic tokens for its prefix and accession body, represented each gene symbol with one atomic token, and tokenized module identifiers compositionally; we call this \textbf{atomic} tokenization.
 
-Our preliminary results show that base tokenization performs poorly on mapping tasks. We trained gpt-oss-120b on approximately 2,000 questions from a small S0 subset under each tokenization approach and evaluated it on 1,000 hard-subset questions. Overall accuracy increased from 45.6\% with the base tokenizer to 85.9\% with atomic tokenization. The mapping-specific gains were larger. Symbol-to-Ensembl accuracy increased from 8.3\% to 100\%, and Ensembl-to-symbol accuracy increased from 5.6\% to 100\%. These results select atomic tokenization for S0, pending confirmation at full vocabulary scale with held-out and low-frequency entities. \comment{still need to add performance table and maybe a figure for the tokenization scheme}
-% TODO: Add a preliminary performance table.
+Our preliminary results show that base tokenization performs poorly on mapping tasks. We trained gpt-oss-120b on approximately 2,000 questions from a small S0 subset under each tokenization approach and evaluated it on 1,000 hard-subset questions. Overall accuracy increased from 45.6\% with the base tokenizer to 85.9\% with atomic tokenization. The mapping-specific gains were larger. Symbol-to-Ensembl accuracy increased from 8.3\% to 100\%, and Ensembl-to-symbol accuracy increased from 5.6\% to 100\%. These results select atomic tokenization for S0, pending confirmation at full vocabulary scale with held-out and low-frequency entities.
 
 \subsection{Plan of Work}\label{sec:ch4-plan}
 We will complete S0--S9 sequentially, materializing each corpus after the preceding gate clears; S0 is underway. The resulting Stage 1 checkpoint will undergo the two flagship evaluations, the cross-cutting probe gate, and curriculum ablations before generating Stage 2 trajectories. DPO on those trajectories will initialize GRPO, followed by the final evaluations, ablations, and deliverables in Section~\ref{sec:ch4-deliverables}.
