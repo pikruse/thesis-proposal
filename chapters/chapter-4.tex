@@ -1,4 +1,4 @@
-\chapter{\textsc{Mentor-RL}}\label{ch4:mentor-rl}
+\chapter{\textsc{Mentor-RL: An Open-Weight Model for Mechanistic Interpretation}}\label{ch4:mentor-rl}
 
 \section{Introduction}
 
@@ -65,15 +65,12 @@ To make the lattice environment compatible with the training pipeline, we use a 
 The runtime uses a set of optimized multiplex functions developed as part of the \textsc{Mentor}~\cite{mentor} and \textsc{Mentor-IA}~\cite{mentor-ia} projects, known as RWR++. Core operators include neighborhood retrieval, shortest-path search, random walk with restart on both monoplex and multiplex views, and subgraph induction. These operators provide the primary graph-facing actions available to the model.
 
 We structure graph tools as learnable, interpretable operators according to three rules. First, each tool accepts only biologically meaningful arguments, such as gene identifiers, layer names, and module identifiers. Thus, when learning to produce a tool call, the model reasons about the biology instead of the file system or command-line interface. Second, we defer numeric computation to the runtime; because tokenization makes precise floating-point values difficult for the model to produce, the model calls a tool to compute any required statistic. Third, we enforce determinism, so the same arguments, graph version, layer scope, and parameter version always return identical output. This enables tool-call caching and reproducible scoring.
-% TODO: add one worked tool-call example here (real signature + return fields), e.g.
-% For example, a call of the form \texttt{...} returns \texttt{...}, with each returned
-% record carrying the layers and edges that produced it.
 
 Runtime operators expose compact graph summaries and provenance metadata to the model instead of raw vectors or matrices. These observations record the relevant layer identity, operator parameters, and source information needed to trace the final interpretation back to the graph evidence used to construct it. To ensure consistency across serialized multiplex files, C++ runtime objects, Python wrappers, and logged training artifacts, all nodes are represented in a single canonical identifier space and all edges are referenced using deterministic, layer-aware identifiers. Table~\ref{tab:ch4-tools} lists the model-facing tool vocabulary used in the curriculum.
 
 \begin{table}[htb!]
 \centering
-\caption{Model-facing RWR++ tool vocabulary. Related calls are grouped by function while preserving the tool names the model emits. The final column gives the curriculum step at which each group is introduced (Section~\ref{sec:ch4-curriculum}).}
+\caption[Model-facing RWR++ tool vocabulary]{Model-facing RWR++ tool vocabulary. Related calls are grouped by function while preserving the tool names the model emits. The final column gives the curriculum step at which each group is introduced (Section~\ref{sec:ch4-curriculum}).}
 \label{tab:ch4-tools}
 \footnotesize
 \setlength{\tabcolsep}{4pt}
@@ -142,7 +139,7 @@ The curriculum scales difficulty along several axes. We scale the lattice tier f
 
 \begin{table}[htb!]
 \centering
-\caption{The ten-stage supervised curriculum. Book mode indicates whether targets are memorized (closed), read from supplied context (open), or produced by constructing and parsing a tool call. Data shares are provisional and will be reset once divergence validation establishes how strongly contexts differ across the lattice.}
+\caption[The ten-stage supervised curriculum]{The ten-stage supervised curriculum. Book mode indicates whether targets are memorized (closed), read from supplied context (open), or produced by constructing and parsing a tool call. Data shares are provisional and will be reset once divergence validation establishes how strongly contexts differ across the lattice.}
 \label{tab:ch4-curriculum}
 \scriptsize
 \setlength{\tabcolsep}{3pt}
@@ -427,7 +424,7 @@ To test whether lattice operators are internalized, we use multilayer-perceptron
 
 \begin{table}[htb!]
 \centering
-\caption{Scoring for the two Stage 1 flagships and the cross-cutting probe gate. Components are reported separately; projection passes only when projection, connectivity recovery, and interpretation all clear their thresholds.}
+\caption[Scoring for the Stage 1 flagships and probe gate]{Scoring for the Stage 1 flagships and the cross-cutting probe gate. Components are reported separately; projection passes only when projection, connectivity recovery, and interpretation all clear their thresholds.}
 \label{tab:ch4-flagship-scoring}
 \footnotesize
 \setlength{\tabcolsep}{4pt}

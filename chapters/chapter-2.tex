@@ -169,7 +169,7 @@ where $\sigma^2_G$ and $\sigma^2_E$ are genotypic and residual variance componen
 
 \begin{table}[p]
  \centering
- \caption{Broad-sense heritability ($H^2$) of the 34 U-Net-derived pod traits in the dryland environment that passed the $H^2 \geq 0.05$ screen and were carried into GWAS. $H^2$ was estimated from a linear mixed model with genotype as a random effect, fit on 25 replicated genotypes (2--3 replicate images per genotype; $\sim$15 pods per replicate image). Significance $p$ is from a restricted likelihood-ratio test on the genotype variance component ($H_0\!:\sigma^2_G = 0$). Traits marked $\dagger$ yielded significant GWAS associations (Table~\ref{tab:ch2-gwas-results}); note that heritability was necessary but not sufficient for a GWAS hit.}\label{tab:ch2-heritability}
+ \caption[Broad-sense heritability of the 34 U-Net derived pod traits]{Broad-sense heritability ($H^2$) of the 34 U-Net-derived pod traits in the dryland environment that passed the $H^2 \geq 0.05$ screen and were carried into GWAS. $H^2$ was estimated from a linear mixed model with genotype as a random effect, fit on 25 replicated genotypes (2--3 replicate images per genotype; $\sim$15 pods per replicate image). Significance $p$ is from a restricted likelihood-ratio test on the genotype variance component ($H_0\!:\sigma^2_G = 0$). Traits marked $\dagger$ yielded significant GWAS associations (Table~\ref{tab:ch2-gwas-results}); note that heritability was necessary but not sufficient for a GWAS hit.}\label{tab:ch2-heritability}
  \footnotesize
  \setlength{\tabcolsep}{6pt}
  \renewcommand{\arraystretch}{1.0}
@@ -254,7 +254,7 @@ We present our results in two stages: the first converts raw pod scans into a pe
 \subsection{Segmentation Benchmark}
 \begin{table}[htbp]
  \centering
- \caption{Segmentation benchmark results. Per-class IoU (wing, envelope, seed) and mean IoU (mIoU), reported as mean $\pm$ standard deviation (\%) across the five full test images; mIoU is the mean of the three tissue-class IoUs. Standard deviations are population values ($\mathrm{ddof}=0$) computed over the five test images; nnU-Net was scored on pod crops under its own adaptive pipeline (Section~\ref{sec:ch2-benchmark}) and grouped back to the source full images before summary. Bold values denote the best mean score in each column.}\label{tab:ch2-pennycress-results}
+ \caption[Segmentation benchmark results]{Segmentation benchmark results. Per-class IoU (wing, envelope, seed) and mean IoU (mIoU), reported as mean $\pm$ standard deviation (\%) across the five full test images; mIoU is the mean of the three tissue-class IoUs. Standard deviations are population values ($\mathrm{ddof}=0$) computed over the five test images; nnU-Net was scored on pod crops under its own adaptive pipeline (Section~\ref{sec:ch2-benchmark}) and grouped back to the source full images before summary. Bold values denote the best mean score in each column.}\label{tab:ch2-pennycress-results}
  \small
  \setlength{\tabcolsep}{3.5pt}
  \renewcommand{\arraystretch}{1.1}
@@ -282,7 +282,7 @@ We present our results in two stages: the first converts raw pod scans into a pe
 
 \begin{table}[htbp]
  \centering
- \caption{Computational efficiency of the benchmarked segmentation architectures. Parameter count (millions), mean inference time per full test image ($n=5$, ROCm), and peak allocated GPU memory are summarized once per architecture. For architectures with boundary-weighting variants, inference time is averaged across the measured variants because parameter counts and peak allocated memory are architecture-level quantities. For nnU-Net, inference time and peak memory were computed by grouping its pod-crop predictions back to their five source full images. SAM~3 is adapted with LoRA, so only 5.70~M of its parameters are trainable. Bold values denote the lowest cost in each column.}\label{tab:ch2-efficiency}
+ \caption[Computational efficiency of benchmarked segmentation architectures]{Computational efficiency of the benchmarked segmentation architectures. Parameter count (millions), mean inference time per full test image ($n=5$, ROCm), and peak allocated GPU memory are summarized once per architecture. For architectures with boundary-weighting variants, inference time is averaged across the measured variants because parameter counts and peak allocated memory are architecture-level quantities. For nnU-Net, inference time and peak memory were computed by grouping its pod-crop predictions back to their five source full images. SAM~3 is adapted with LoRA, so only 5.70~M of its parameters are trainable. Bold values denote the lowest cost in each column.}\label{tab:ch2-efficiency}
  \small
  \setlength{\tabcolsep}{6pt}
  \renewcommand{\arraystretch}{1.1}
@@ -374,7 +374,7 @@ GWAS yielded six unique SNPs across four phenotypes: envelope CIELAB $b^*$, enve
 
 \begin{table}[htbp]
  \centering
- \caption{Summary of retained GWAS associations for heritable, U-Net-derived pod traits (dryland environment), tested across 189 genotyped accessions. Associations are reported at a suggestive raw $p < 1\times10^{-6}$ cutoff; linkage disequilibrium among SNPs makes per-SNP tests non-independent, so a Bonferroni threshold is overly conservative. $H^2$, broad-sense heritability; SNPs, number of retained single nucleotide polymorphisms; Models, GAPIT models (MLM, MLMM, FarmCPU, BLINK) producing the associations; Lead SNP, most significant SNP (chromosome\_position); Lead raw $p$, its unadjusted $p$-value.}\label{tab:ch2-gwas-results}
+ \caption[Summary of retained GWAS associations for heritable, U-Net-derived pod traits]{Summary of retained GWAS associations for heritable, U-Net-derived pod traits (dryland environment), tested across 189 genotyped accessions. Associations are reported at a suggestive raw $p < 1\times10^{-6}$ cutoff; linkage disequilibrium among SNPs makes per-SNP tests non-independent, so a Bonferroni threshold is overly conservative. $H^2$, broad-sense heritability; SNPs, number of retained single nucleotide polymorphisms; Models, GAPIT models (MLM, MLMM, FarmCPU, BLINK) producing the associations; Lead SNP, most significant SNP (chromosome\_position); Lead raw $p$, its unadjusted $p$-value.}\label{tab:ch2-gwas-results}
  \small
  \setlength{\tabcolsep}{3.5pt}
  \renewcommand{\arraystretch}{1.1}
