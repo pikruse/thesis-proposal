@@ -42,11 +42,12 @@ supplement/                  # README.md + ablation_run_manifest.csv (Ch 3 run i
 `\graphicspath` already includes `figures/`, `figures/eps/`, `figures/pdf/` — reference
 figures by filename, and put new chapter figures in the matching `figures/<topic>/` subfolder.
  
-**Chapter 4 figures are TikZ, not graphics.** `figures/mentor-rl/*.tex` are standalone TikZ
-pictures pulled in as `\resizebox{\linewidth}{!}{\input{figures/mentor-rl/<name>}}`, not
-`\includegraphics`. Their shared style file, `figures/mentor-rl/mentor-rl-style.tex`, is
-`\input` in the preamble of `my-dissertation.tex` — a new Ch 4 figure should reuse those
-styles rather than define its own colors.
+**Chapter 4 figures are exported TikZ graphics.** Their authoritative TikZ sources and shared
+style live in `../mentor-rl-methods/figures/`. XeLaTeX exports them there as standalone PDFs
+using Avenir Next; the six PDFs used by Chapter 4 are copied into `figures/mentor-rl/` and
+included with `\includegraphics`. Edit and regenerate the source figures in the MENTOR-RL
+repository rather than editing an exported PDF. The older local `.tex` copies are retained as
+historical mirrors but are not thesis build inputs.
 
 `supplement/ablation_run_manifest.csv` is a **derived** artifact: it is regenerated from the
 G×E paper repo's W&B export via `scripts/build_ablation_manifest.py` (command in

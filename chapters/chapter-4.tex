@@ -24,7 +24,7 @@ The lattice comprises a tiered structure that captures the relationships between
 
 \begin{figure}[tbp] \comment{is it possible to improve the figure by including icons that represent each context? I think that would be helpful, but not sure where to get them}
     \centering
-    \resizebox{\linewidth}{!}{\input{figures/mentor-rl/multiplex-lattice}}
+    \includegraphics[width=\linewidth]{figures/mentor-rl/figure-01-multiplex-lattice.pdf}
     \caption[The multiplex lattice and its construction rule]{The multiplex lattice and its shared construction rule. Panel A gives a generic partial-order example. A cell-type-within-tissue context belongs to both its tissue context and its cell-type-across-region context. Panel B shows the construction at one coordinate. Active PEN layers define the gene universe, non-PEN layers are re-induced on that universe, and both layer sets are stacked into a distinct multiplex.}
     \label{fig:ch4-lattice}
 \end{figure}
@@ -51,7 +51,7 @@ However, RWR-LOE and \textsc{Mentor-EV} modules are both lossy abstractions of t
 
 \begin{figure}[tbp]
     \centering
-    \resizebox{\linewidth}{!}{\input{figures/mentor-rl/three-structural-views}}
+    \includegraphics[width=\linewidth]{figures/mentor-rl/figure-02-three-structural-views.pdf}
     \caption[Three structural views derived from the same context multiplex]{Three structural views derived from the same context multiplex. RWR-LOE supplies bottom-up neighborhoods, \textsc{Mentor-EV} supplies top-down nested clades, and direct network operators recover paths and bridge nodes suppressed by either abstraction. The views are complementary targets, not interchangeable descriptions.}
     \label{fig:ch4-three-views}
 \end{figure}
@@ -209,7 +209,7 @@ where $D_t = (q, e, I_t, S_t)$ is the decision context and $\varepsilon(\varnoth
 
 \begin{figure}[tbp]
     \centering
-    \resizebox{\linewidth}{!}{\input{figures/mentor-rl/agent-loop}}
+    \includegraphics[width=\linewidth]{figures/mentor-rl/figure-03-agent-loop.pdf}
     \caption[One iteration of the act--tool--verify loop]{One iteration of the act--tool--verify loop. Actor and verifier modes share model weights, while the graph runtime remains deterministic. Verification produces synchronized human-readable and machine-readable views of the current hypothesis and a decision to continue, revise, or stop.}
     \label{fig:ch4-agent-loop}
 \end{figure}
@@ -244,7 +244,7 @@ The agent curriculum culminates in the applied case, in which the projected seed
 
 \begin{figure}[tbp]
     \centering
-    \resizebox{\linewidth}{!}{\input{figures/mentor-rl/projection-applied-case}}
+    \includegraphics[width=\linewidth]{figures/mentor-rl/figure-05-projection-applied-case.pdf}
     \caption[Projection and return to network]{Projection and return to network, with the applied drug-target or disease-signal extension. A seed neighborhood is enriched against the hierarchy; significant, potentially distant clades are then connected and interpreted on the multiplex. Directional and translational filters are applied only after this network confirmation.}
     \label{fig:ch4-projection-applied}
 \end{figure}
@@ -267,7 +267,7 @@ Given a sampled task and initialized state, we sample multiple action candidates
 
 \begin{figure}[tbp]
     \centering
-    \resizebox{\linewidth}{!}{\input{figures/mentor-rl/shared-prefix-preferences}}
+    \includegraphics[width=\linewidth]{figures/mentor-rl/figure-06-shared-prefix-preferences.pdf}
     \caption[Shared-prefix branch exploration and DPO preference construction]{Shared-prefix branch exploration and DPO preference construction. Candidate actions and verifier updates are compared only after the same decision context. Task-quality selection chooses the retained continuation; eligible lower-scoring branches from that pool become dispreferred continuations when the normalized margin exceeds $\tau$.}
     \label{fig:ch4-shared-prefix}
 \end{figure}
@@ -395,7 +395,7 @@ The local scores above supply the preference signal for DPO, while the terminal 
 
 \begin{figure}[tbp]
     \centering
-    \resizebox{\linewidth}{!}{\input{figures/mentor-rl/training-pipeline}}
+    \includegraphics[width=\linewidth]{figures/mentor-rl/figure-07-training-pipeline.pdf}
     \caption[The two-stage training pipeline]{The gated two-stage training pipeline. Stage 1 advances through supervised curriculum steps only after held out gates clear. Its checkpoint initializes trajectory generation and preference optimization in Stage 2, followed by online GRPO. Checkpoint evidence accumulates from structural evaluations through agent behavior and expert review.}
     \label{fig:ch4-training-pipeline}
 \end{figure}
